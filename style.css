@@ -1,0 +1,507 @@
+/* ============ Khel Khel Mein Seekho — theme ============ */
+:root {
+  --bg1: #FFF9EC;
+  --bg2: #FFEFD5;
+  --ink: #4E342E;
+  --card: #FFFFFF;
+  --coral: #FF6B6B;
+  --sunny: #FFD93D;
+  --mint: #6BCB77;
+  --sky: #4D96FF;
+  --lilac: #B39DDB;
+  --tangerine: #FFA94D;
+  --tap: 80px;
+  --radius: 24px;
+  --shadow: 0 6px 0 rgba(0, 0, 0, .14);
+  --shadow-sm: 0 4px 0 rgba(0, 0, 0, .12);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Devanagari", "Nirmala UI", "Mangal", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--bg1), var(--bg2)) fixed;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+@supports (min-height: 100dvh) {
+  #app { min-height: 100dvh; }
+}
+
+/* ============ Header ============ */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.icon-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .1s;
+}
+.icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.12); }
+.invisible { visibility: hidden; }
+
+#star-pill {
+  background: var(--card);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  padding: 10px 22px;
+  font-size: 1.5rem;
+}
+#star-pill.pulse { animation: pulse .5s ease; }
+
+#lang-toggle {
+  display: flex;
+  background: var(--card);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+#lang-toggle .seg {
+  padding: 12px 18px;
+  font-size: 1.2rem;
+  min-width: 58px;
+  text-align: center;
+  transition: background .2s, color .2s;
+}
+#lang-toggle .seg.active {
+  background: var(--sky);
+  color: #fff;
+}
+
+/* ============ Screens ============ */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px 24px;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.screen { display: none; }
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  animation: fadein .25s ease;
+}
+
+.hint {
+  margin: 0;
+  font-size: 1.15rem;
+  opacity: .75;
+  text-align: center;
+}
+
+/* ============ Home ============ */
+#home-title {
+  margin: 8px 0 0;
+  font-size: clamp(1.6rem, 5.5vw, 2.4rem);
+  text-align: center;
+}
+
+#home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  width: 100%;
+  max-width: 560px;
+  margin-top: 8px;
+}
+
+.game-card {
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px 12px;
+  min-height: 150px;
+  transition: transform .1s;
+  text-shadow: 0 2px 3px rgba(0,0,0,.18);
+}
+.game-card:active { transform: translateY(4px) scale(.98); box-shadow: 0 2px 0 rgba(0,0,0,.14); }
+.game-card .g-emoji { font-size: 3.6rem; line-height: 1; text-shadow: none; }
+.game-card .g-title { font-size: 1.25rem; text-align: center; }
+
+/* ============ Tabs (ABC / 123) ============ */
+.tabs {
+  display: flex;
+  gap: 10px;
+  background: rgba(255,255,255,.6);
+  border-radius: 999px;
+  padding: 6px;
+}
+.tab {
+  border-radius: 999px;
+  padding: 12px 30px;
+  font-size: 1.35rem;
+  transition: background .2s, color .2s;
+}
+.tab.active { background: var(--tangerine); color: #fff; box-shadow: var(--shadow-sm); }
+
+/* ============ Learn grids & tiles ============ */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.tile {
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  min-height: var(--tap);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 10px 4px;
+  transition: transform .1s;
+}
+.tile:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.12); }
+.tile .t-big { font-size: 2.2rem; line-height: 1.15; }
+.tile .t-small { font-size: 1.35rem; line-height: 1.2; }
+.tile .t-word { font-size: .95rem; opacity: .8; line-height: 1.2; text-align: center; }
+
+.animal-tile .t-big { font-size: 2.8rem; }
+
+/* Colors row */
+#colors-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+}
+.blob-tile {
+  background: var(--card);
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  width: 74px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .1s;
+}
+.blob-tile:active { transform: translateY(3px); }
+.blob {
+  display: block;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  box-shadow: inset -4px -6px 0 rgba(0,0,0,.15), inset 4px 6px 0 rgba(255,255,255,.35);
+}
+
+.shape { width: 68px; height: 68px; display: block; }
+
+/* ============ Big buttons ============ */
+.big-btn {
+  background: var(--mint);
+  color: #fff;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  padding: 16px 34px;
+  font-size: 1.4rem;
+  min-height: 64px;
+  transition: transform .1s;
+  text-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+.big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.14); }
+.big-btn.alt { background: var(--sky); }
+.quiz-btn { background: var(--coral); margin-top: 4px; }
+
+/* ============ Quiz ============ */
+#quiz-dots { display: flex; gap: 10px; margin-top: 6px; }
+.dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.12);
+  transition: background .3s, transform .3s;
+}
+.dot.filled { background: var(--sunny); transform: scale(1.2); box-shadow: 0 2px 0 rgba(0,0,0,.1); }
+
+#quiz-bubble {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  width: 100%;
+  max-width: 560px;
+}
+#quiz-replay {
+  font-size: 1.9rem;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 50%;
+  background: var(--bg2);
+  box-shadow: var(--shadow-sm);
+}
+#quiz-replay:active { transform: translateY(3px); }
+.bubble-body { flex: 1; }
+#quiz-text { font-size: 1.5rem; line-height: 1.3; }
+#quiz-extra { font-size: 2rem; line-height: 1.4; margin-top: 4px; word-spacing: 6px; }
+#quiz-extra:empty { display: none; }
+
+#quiz-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 640px;
+  margin-top: 8px;
+}
+.quiz-tile {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  flex: 1 1 140px;
+  max-width: 190px;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.4rem;
+  transition: transform .1s, opacity .3s;
+}
+.quiz-tile:active { transform: translateY(4px); }
+.quiz-tile .shape { width: 92px; height: 92px; }
+.quiz-tile .blob { width: 84px; height: 84px; }
+.quiz-tile.dim { opacity: .45; }
+.quiz-tile.faded { opacity: .25; }
+
+/* ============ Memory ============ */
+#memory-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 430px;
+}
+
+.mem-card {
+  aspect-ratio: 1;
+  perspective: 700px;
+}
+.mem-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .45s;
+}
+.mem-card.flipped .mem-inner { transform: rotateY(180deg); }
+.mem-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+}
+.mem-back {
+  background: linear-gradient(135deg, var(--lilac), var(--sky));
+  color: rgba(255,255,255,.9);
+}
+.mem-front {
+  background: var(--card);
+  transform: rotateY(180deg);
+}
+.mem-card.matched { animation: bounce .5s ease; }
+.mem-card.matched .mem-front { opacity: .65; background: #F1F8E9; }
+
+/* ============ Celebrate overlay ============ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(78, 52, 46, .45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.overlay.show { opacity: 1; pointer-events: auto; }
+
+.overlay-card {
+  background: var(--card);
+  border-radius: 28px;
+  box-shadow: 0 10px 0 rgba(0,0,0,.2);
+  padding: 30px 26px;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  transform: scale(.7);
+  transition: transform .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+.overlay.show .overlay-card { transform: scale(1); }
+
+#celebrate-stars { font-size: 2.6rem; line-height: 1.2; }
+#celebrate-stars span {
+  display: inline-block;
+  animation: starpop .5s cubic-bezier(.34, 1.56, .64, 1) backwards;
+}
+#celebrate-title { margin: 12px 0 20px; font-size: 1.7rem; }
+.overlay-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ============ Confetti / fly star / toast ============ */
+#confetti-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti {
+  position: absolute;
+  top: -6vh;
+  animation: confetti-fall linear forwards;
+}
+.confetti-square {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.fly-star {
+  position: fixed;
+  z-index: 80;
+  font-size: 2rem;
+  pointer-events: none;
+  transition: transform .7s cubic-bezier(.5, -.2, .6, 1), opacity .7s;
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translate(-50%, calc(100% + 30px));
+  z-index: 90;
+  background: var(--ink);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 14px;
+  padding: 12px 18px;
+  max-width: min(92vw, 480px);
+  text-align: center;
+  transition: transform .3s;
+  pointer-events: none;
+}
+#toast.show { transform: translate(-50%, 0); }
+#toast:empty { display: none; }
+
+/* ============ Animations ============ */
+@keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 50% { transform: scale(1.25); } }
+@keyframes pop { 50% { transform: scale(1.18); } }
+.pop { animation: pop .35s ease; }
+@keyframes wiggle {
+  20% { transform: translateX(-8px) rotate(-3deg); }
+  40% { transform: translateX(8px) rotate(3deg); }
+  60% { transform: translateX(-6px) rotate(-2deg); }
+  80% { transform: translateX(6px) rotate(2deg); }
+}
+.wiggle { animation: wiggle .45s ease; }
+@keyframes bounce {
+  30% { transform: translateY(-12px) scale(1.06); }
+  60% { transform: translateY(3px); }
+}
+@keyframes starpop { from { transform: scale(0) rotate(-30deg); } 70% { transform: scale(1.3); } to { transform: scale(1); } }
+@keyframes confetti-fall {
+  to { transform: translateY(118vh) rotate(560deg); opacity: .8; }
+}
+
+/* ============ Responsive ============ */
+@media (min-width: 700px) and (orientation: landscape) {
+  #home-grid { grid-template-columns: repeat(4, 1fr); max-width: 860px; }
+  #memory-grid { grid-template-columns: repeat(4, 1fr); max-width: 560px; }
+}
+@media (max-height: 520px) {
+  body { font-size: 17px; }
+  .icon-btn { width: 52px; height: 52px; }
+  .game-card { min-height: 110px; padding: 12px 8px; }
+  .game-card .g-emoji { font-size: 2.6rem; }
+  .quiz-tile { min-height: 110px; font-size: 2.6rem; }
+  .quiz-tile .shape { width: 68px; height: 68px; }
+  #memory-grid { grid-template-columns: repeat(4, 1fr); max-width: 480px; }
+  .mem-face { font-size: 2rem; }
+}
+@media (max-width: 380px) {
+  .tile-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 9px; }
+  .tile .t-big { font-size: 1.9rem; }
+  #quiz-text { font-size: 1.3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001s !important;
+    transition-duration: .001s !important;
+  }
+}

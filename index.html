@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Khel Khel Mein Seekho 🎈</title>
+<meta name="description" content="A bilingual (Hindi + English) learning game for little kids: ABC, counting, shapes, colors, memory match, animals and sounds.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%8E%88%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script defer src="app.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <button id="btn-back" class="icon-btn invisible" aria-label="Back / पीछे">⬅️</button>
+    <div id="star-pill" title="Stars / सितारे">⭐ <span id="star-count">0</span></div>
+    <button id="lang-toggle" aria-label="Language / भाषा">
+      <span class="seg active" data-lang="en">EN</span><span class="seg" data-lang="hi">हि</span>
+    </button>
+  </header>
+
+  <main id="main">
+
+    <section id="screen-home" class="screen active">
+      <h1 id="home-title">Khel Khel Mein Seekho!</h1>
+      <p id="home-sub" class="hint"></p>
+      <div id="home-grid"></div>
+    </section>
+
+    <section id="screen-abc" class="screen">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="letters" role="tab">ABC</button>
+        <button class="tab" data-tab="numbers" role="tab">123</button>
+      </div>
+      <div id="abc-grid" class="tile-grid"></div>
+      <button id="abc-quiz" class="big-btn quiz-btn"></button>
+    </section>
+
+    <section id="screen-shapes" class="screen">
+      <div id="shapes-grid" class="tile-grid"></div>
+      <div id="colors-row"></div>
+      <button id="shapes-quiz" class="big-btn quiz-btn"></button>
+    </section>
+
+    <section id="screen-memory" class="screen">
+      <p id="memory-hint" class="hint"></p>
+      <div id="memory-grid"></div>
+    </section>
+
+    <section id="screen-animals" class="screen">
+      <div id="animals-grid" class="tile-grid"></div>
+      <button id="animals-quiz" class="big-btn quiz-btn"></button>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+      <div id="quiz-dots" aria-hidden="true"></div>
+      <div id="quiz-bubble">
+        <button id="quiz-replay" aria-label="Listen again / फिर से सुनो">🔊</button>
+        <div class="bubble-body">
+          <div id="quiz-text" aria-live="polite"></div>
+          <div id="quiz-extra"></div>
+        </div>
+      </div>
+      <div id="quiz-choices"></div>
+    </section>
+
+  </main>
+
+  <div id="celebrate" class="overlay" aria-hidden="true">
+    <div class="overlay-card">
+      <div id="celebrate-stars" aria-hidden="true"></div>
+      <h2 id="celebrate-title"></h2>
+      <div class="overlay-btns">
+        <button id="btn-again" class="big-btn"></button>
+        <button id="btn-cele-home" class="big-btn alt"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="confetti-layer" aria-hidden="true"></div>
+  <div id="toast" role="status"></div>
+
+  <noscript><p style="text-align:center;padding:2rem;">Please enable JavaScript to play. / खेलने के लिए JavaScript चालू करें।</p></noscript>
+</div>
+</body>
+</html>
