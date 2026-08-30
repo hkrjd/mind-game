@@ -10,8 +10,8 @@ No installs, no internet needed after loading — just open `index.html` in any 
 ### 📚 ABC & Words / ABC और शब्द
 | Game | What the child learns |
 |---|---|
-| 🔤 **ABC & Ginti** | Letters A–Z with words ("A for Apple / A से सेब") and counting 1–10, with find-it quizzes |
-| ✏️ **Learn Writing / लिखना सीखो** | Trace letters, numbers and shapes by painting over them with a finger |
+| 🔤 **ABC & Ginti** | Letters A–Z ("A for Apple / A से सेब"), counting 1–10, **and the Devanagari varnamala (क से कमल…)** — with find-it quizzes |
+| ✏️ **Learn Writing / लिखना सीखो** | Trace English letters, numbers, **Hindi letters (क, ख, ग…)** and shapes by painting over them with a finger |
 | 🔡 **Word Banao / शब्द बनाओ** | Spell CAT, DOG, SUN… by tapping letter tiles in order |
 | 🗣️ **Phonics** | "Which one starts with B?" — first-letter sounds |
 | 🔠 **Big & Small Aa / बड़ा-छोटा** | Match capital letters with small letters (A ↔ a) |
@@ -46,6 +46,7 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🖍️ **Drawing** | Free drawing with crayons, plus a magical neon **Glow mode** |
 | 🌧️ **Gardener / माली** | Press and hold to make rain and grow flowers |
 | 🎵 **Rhymes / कविताएँ** | Twinkle Twinkle, Baa Baa Black Sheep, मछली जल की रानी, चंदा मामा |
+| 🏆 **Sticker Book / स्टिकर बुक** | Every 25 ⭐ unlocks a new sticker for the shelf — tap the star counter to open it |
 
 Everything is spoken aloud, so the child does not need to read. Right answers earn ⭐ stars (saved on the device) with confetti; wrong answers just get a gentle wiggle and "फिर से कोशिश करो!" — no timers, no losing.
 
@@ -53,7 +54,15 @@ Everything is spoken aloud, so the child does not need to read. Right answers ea
 
 1. Open `index.html` in a browser (double-click works — no server needed), **or** host it with GitHub Pages (below).
 2. **Tap once anywhere first** — browsers only allow sound after a touch.
-3. Use the **EN | हि** button (top right) to switch language any time. ⬅️ goes back, ⭐ shows the stars earned.
+3. Use the **EN | हि** button (top right) to switch language any time, and 🔊/🔇 to mute. ⬅️ (or the phone's back button) goes back; tapping the ⭐ counter opens the Sticker Book.
+
+### 📲 Install it like a real app / फ़ोन पर app जैसा
+
+When the game is hosted on HTTPS (GitHub Pages works), it is a full **PWA**:
+- **Android (Chrome)**: open the game link → menu ⋮ → **Add to Home screen / Install app**
+- **iPhone (Safari)**: Share button → **Add to Home Screen**
+
+It gets its own icon, opens fullscreen without the browser bar, and **works completely offline** after the first visit.
 
 ### 🔊 Getting the Hindi voice / हिंदी आवाज़
 
@@ -73,17 +82,19 @@ A minute later the game is live at `https://<your-username>.github.io/mind-game/
 ## 🛠️ Tech notes
 
 - Zero-build vanilla HTML/CSS/JS — no frameworks, no assets: emoji for pictures, SVG/canvas for shapes and puzzles, Web Speech API for voices, Web Audio API for jingles.
-- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, rhymes, 1–100), `games-vocab.js`, `games-skill.js`, `games-arcade.js`.
-- Works fully offline from `file://`; degrades gracefully when speech/audio/localStorage are unavailable.
+- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
+- Works fully offline: from `file://` directly, and as an installed PWA via the service worker. Degrades gracefully when speech/audio/localStorage are unavailable.
+- **When deploying an update, bump `VERSION` in `sw.js`** so installed apps fetch the new files.
 - Smoke tests (drive every game headlessly and screenshot each screen):
   ```
-  node tests/verify.js    # core: first 4 games, quiz engine, Hindi toggle, persistence
-  node tests/verify2.js   # all 20 newer games
+  node tests/verify.js      # core: first 4 games, quiz engine, Hindi toggle, persistence
+  node tests/verify2.js     # the 20 newer games + varnamala, mute, stickers, back button
+  node tests/verify-pwa.js  # manifest, icons, service worker, offline boot (needs http-server)
   ```
   Requires Node with [Playwright](https://playwright.dev) available (`npm i -g playwright` + browsers).
 
 ## 💡 Future ideas
 
-- Devanagari varnamala (अ, आ, इ…) as a third tab in ABC & Ginti
 - More puzzle pictures and memory-match difficulty levels
-- A PWA manifest + service worker so it installs like an app from the browser
+- Simple word-reading games once the varnamala is mastered
+- A parent corner with per-game progress

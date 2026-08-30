@@ -944,3 +944,29 @@ button {
   touch-action: none;
 }
 #draw-canvas[data-mode="glow"] { background: #191036; }
+
+/* ================================================================
+   v3: header extras, varnamala, sticker book, small-height polish
+   ================================================================ */
+
+.top-right { display: flex; gap: 8px; align-items: center; }
+#star-pill { cursor: pointer; transition: transform .1s; }
+#star-pill:active { transform: translateY(3px); }
+#btn-mute { font-size: 1.4rem; }
+
+.varna-tile .t-big { font-size: 1.9rem; }
+.varna-tile .t-small { font-size: 1.2rem; }
+
+.sticker-tile .t-big { font-size: 2.6rem; }
+.sticker-tile.locked { background: #F3EADF; }
+.sticker-tile.locked .t-word { opacity: .65; }
+
+@media (max-height: 520px) {
+  #skypop-area { min-height: 230px; }
+  #tower-area { height: 300px; }
+  #garden-scene { height: 270px; }
+  #traffic-scene { height: 230px; }
+  #trace-canvas { width: min(46vh, 300px); }
+  .plant { font-size: 2rem; min-height: 44px; line-height: 44px; }
+  #draw-frame { min-height: 220px; }
+}

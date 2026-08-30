@@ -180,13 +180,32 @@ const store = (() => {
   return {
     getStars() { return parseInt(get('mg-stars', '0'), 10) || 0; },
     addStars(n) {
-      set('mg-stars', String(this.getStars() + n));
+      const before = this.getStars();
+      set('mg-stars', String(before + n));
       updateStarCount();
+      // Sticker book: a new sticker unlocks every STICKER_STEP stars.
+      try {
+        if (typeof STICKER_STEP !== 'undefined' &&
+          Math.floor((before + n) / STICKER_STEP) > Math.floor(before / STICKER_STEP)) {
+          onStickerUnlock(Math.floor((before + n) / STICKER_STEP));
+        }
+      } catch (e) { /* ignore */ }
     },
     getLang() { return get('mg-lang', 'en') === 'hi' ? 'hi' : 'en'; },
-    setLang(l) { set('mg-lang', l); }
+    setLang(l) { set('mg-lang', l); },
+    getMute() { return get('mg-mute', '0') === '1'; },
+    setMute(m) { set('mg-mute', m ? '1' : '0'); }
   };
 })();
+
+function onStickerUnlock(count) {
+  try {
+    confetti(20);
+    sfx.fanfare();
+    const s = (typeof STICKERS !== 'undefined') && STICKERS[Math.min(count, STICKERS.length) - 1];
+    if (s) toast(T.newSticker[store.getLang()] + ' ' + s.emoji);
+  } catch (e) { /* ignore */ }
+}
 
 /* ---------------- Speech (Web Speech API) ---------------- */
 
@@ -214,9 +233,9 @@ const speech = (() => {
     } catch (e) { /* ignore */ }
   }
 
-  // lang: 'en' | 'hi'. Never throws; silent no-op without support.
+  // lang: 'en' | 'hi'. Never throws; silent no-op without support (or muted).
   function speak(text, lang, opts) {
-    if (!ok || !text) return;
+    if (!ok || !text || store.getMute()) return;
     const o = opts || {};
     try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
     // Android quirk: speak() immediately after cancel() gets swallowed.
@@ -255,7 +274,7 @@ const speech = (() => {
 // Speaks a {en, hi, hiSay} phrase in the current language, falling back to
 // the romanized form on an English voice when no Hindi voice exists.
 function sayPhrase(ph) {
-  if (!ph) return;
+  if (!ph || store.getMute()) return;
   if (store.getLang() === 'hi') {
     if (speech.hasHindi()) {
       speech.speak(ph.hi, 'hi');
@@ -284,7 +303,7 @@ const sfx = (() => {
   }
 
   function tone(freq, start, dur, type, vol) {
-    if (!ctx) return;
+    if (!ctx || store.getMute()) return;
     try {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -422,8 +441,19 @@ function showScreen(id) {
   $('btn-back').classList.toggle('invisible', id === 'screen-home');
 }
 
-function goBack() {
-  sfx.pop();
+// Each forward navigation pushes a history entry so the phone's back
+// button walks back through the app instead of leaving it.
+function navPush(id) {
+  try { history.pushState({ s: id }, ''); } catch (e) { /* ignore */ }
+}
+
+function performBack() {
+  const cel = $('celebrate');
+  if (cel && cel.classList.contains('show')) {
+    hideCelebrate();
+    showScreen('screen-home');
+    return;
+  }
   if (currentScreen === 'screen-quiz' && quiz.cfg) {
     showScreen(quiz.cfg.backTo);
     return;
@@ -431,8 +461,19 @@ function goBack() {
   const gid = activeGameId();
   // A game can intercept back (e.g. an inner view returns to its own list first).
   if (gid && GAMES[gid].onBack && GAMES[gid].onBack()) return;
-  showScreen('screen-home');
+  if (currentScreen !== 'screen-home') showScreen('screen-home');
 }
+
+function goBack() {
+  sfx.pop();
+  // Prefer real history so the hardware back button and ⬅️ stay in sync.
+  if (history.state && history.state.s) {
+    try { history.back(); return; } catch (e) { /* ignore */ }
+  }
+  performBack();
+}
+
+window.addEventListener('popstate', performBack);
 
 // Later game scripts create their own <section class="screen"> with this.
 function buildScreen(id, html) {
@@ -499,6 +540,8 @@ const quiz = {
     this.count = 0;
     this.lastKey = null;
     showScreen('screen-quiz');
+    // "Play again" restarts must not pile up history entries.
+    if (!(history.state && history.state.s === 'screen-quiz')) navPush('screen-quiz');
     this.next();
   },
 
@@ -610,7 +653,7 @@ const abcGame = {
         });
         grid.appendChild(b);
       });
-    } else {
+    } else if (this.tab === 'numbers') {
       NUMBERS.forEach((num) => {
         const b = document.createElement('button');
         b.className = 'tile';
@@ -622,11 +665,39 @@ const abcGame = {
         });
         grid.appendChild(b);
       });
+    } else {
+      VARNAMALA.forEach((v) => {
+        const b = document.createElement('button');
+        b.className = 'tile varna-tile';
+        b.innerHTML = '<span class="t-big">' + v.ch + '</span>' +
+          (v.emoji ? '<span class="t-small">' + v.emoji + '</span>' : '');
+        b.addEventListener('click', () => {
+          sfx.pop();
+          popIt(b);
+          sayPhrase(varnaPhrase(v));
+        });
+        grid.appendChild(b);
+      });
     }
   },
 
   make(index) {
-    return this.tab === 'letters' ? this.letterQuestion() : this.numberQuestion();
+    if (this.tab === 'letters') return this.letterQuestion();
+    if (this.tab === 'numbers') return this.numberQuestion();
+    return this.varnaQuestion();
+  },
+
+  varnaQuestion() {
+    const three = sample(VARNAMALA, 3);
+    const ans = three[0];
+    return {
+      key: 'V' + ans.ch,
+      prompt: phrase('Find ' + ans.roman + '!', ans.ch + ' ढूँढो!', ans.roman + ' dhoondho!'),
+      extra: '',
+      choices: shuffle(three).map((v) => ({ key: v.ch, html: '<span>' + v.ch + '</span>' })),
+      answer: ans.ch,
+      answerPhrase: varnaPhrase(ans)
+    };
   },
 
   letterQuestion() {
@@ -921,7 +992,7 @@ const HOME_SECTIONS = [
   { title: { en: '📚 ABC & Words', hi: '📚 ABC और शब्द' }, games: ['abc', 'tracing', 'spelling', 'phonics', 'capsmall'] },
   { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'board100', 'clock', 'tower'] },
   { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'traffic'] },
-  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['memory', 'puzzle', 'maze', 'shadow', 'skypop', 'drawing', 'gardener', 'rhymes'] }
+  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['memory', 'puzzle', 'maze', 'shadow', 'skypop', 'drawing', 'gardener', 'rhymes', 'stickers'] }
 ];
 
 function gameCard(id) {
@@ -936,6 +1007,7 @@ function gameCard(id) {
     sfx.pop();
     g.enter();
     showScreen(g.screen);
+    navPush(g.screen);
     sayPhrase(GAME_TITLES[id]);
   });
   return b;
@@ -989,12 +1061,52 @@ function toggleLang() {
 
 /* ---------------- Boot ---------------- */
 
+function updateMuteBtn() {
+  $('btn-mute').textContent = store.getMute() ? '🔇' : '🔊';
+}
+
+function registerSW() {
+  try {
+    if (!('serviceWorker' in navigator)) return;
+    // file:// (double-click use) must keep working — register only where allowed.
+    const secure = location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    if (!secure) return;
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            toast(T.newVersion[store.getLang()]);
+          }
+        });
+      });
+    }).catch(() => { /* offline first load etc. */ });
+  } catch (e) { /* ignore */ }
+}
+
 function boot() {
   speech.init();
   updateStarCount();
+  updateMuteBtn();
+  registerSW();
 
   $('btn-back').addEventListener('click', goBack);
   $('lang-toggle').addEventListener('click', toggleLang);
+  $('btn-mute').addEventListener('click', () => {
+    const m = !store.getMute();
+    store.setMute(m);
+    updateMuteBtn();
+    if (m) speech.stop(); else sfx.pop();
+  });
+  $('star-pill').addEventListener('click', () => {
+    if (!GAMES.stickers) return;
+    sfx.pop();
+    GAMES.stickers.enter();
+    showScreen(GAMES.stickers.screen);
+    navPush(GAMES.stickers.screen);
+    sayPhrase(GAME_TITLES.stickers);
+  });
   $('quiz-replay').addEventListener('click', () => { sfx.pop(); quiz.replay(); });
   $('btn-again').addEventListener('click', () => {
     sfx.pop();

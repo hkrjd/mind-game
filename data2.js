@@ -202,7 +202,10 @@ const PUZZLE_PICS = [
   { emoji: '🏠', en: 'House', hi: 'घर', hiSay: 'Ghar' },
   { emoji: '🚗', en: 'Car', hi: 'गाड़ी', hiSay: 'Gaadi' },
   { emoji: '🦋', en: 'Butterfly', hi: 'तितली', hiSay: 'Titli' },
-  { emoji: '🌈', en: 'Rainbow', hi: 'इंद्रधनुष', hiSay: 'Indradhanush' }
+  { emoji: '🌈', en: 'Rainbow', hi: 'इंद्रधनुष', hiSay: 'Indradhanush' },
+  { emoji: '🐘', en: 'Elephant', hi: 'हाथी', hiSay: 'Haathi' },
+  { emoji: '🌻', en: 'Sunflower', hi: 'सूरजमुखी', hiSay: 'Surajmukhi' },
+  { emoji: '🚂', en: 'Train', hi: 'रेलगाड़ी', hiSay: 'Railgaadi' }
 ];
 
 /* ---------------- Traffic vehicles ---------------- */
@@ -271,3 +274,102 @@ const GAME_TITLES2 = {
   rhymes: { en: 'Rhymes', hi: 'कविताएँ', hiSay: 'Kavitayen' }
 };
 Object.assign(GAME_TITLES, GAME_TITLES2);
+
+/* ---------------- Devanagari varnamala ---------------- */
+// word/emoji empty => the tile shows the letter alone (nasals & rare letters).
+// Spoken via sayPhrase: Devanagari with a hi-IN voice, romanized fallback otherwise.
+
+const VARNAMALA = [
+  { ch: 'अ', roman: 'A', word: 'अनानास', wordSay: 'Ananas', emoji: '🍍' },
+  { ch: 'आ', roman: 'Aa', word: 'आम', wordSay: 'Aam', emoji: '🥭' },
+  { ch: 'इ', roman: 'I', word: 'इमारत', wordSay: 'Imarat', emoji: '🏢' },
+  { ch: 'ई', roman: 'Ee', word: 'ईंट', wordSay: 'Eent', emoji: '🧱' },
+  { ch: 'उ', roman: 'U', word: 'उल्लू', wordSay: 'Ullu', emoji: '🦉' },
+  { ch: 'ऊ', roman: 'Oo', word: 'ऊन', wordSay: 'Oon', emoji: '🧶' },
+  { ch: 'ऋ', roman: 'Ri', word: 'ऋषि', wordSay: 'Rishi', emoji: '🧘' },
+  { ch: 'ए', roman: 'E', word: 'एड़ी', wordSay: 'Edi', emoji: '🦶' },
+  { ch: 'ऐ', roman: 'Ai', word: 'ऐनक', wordSay: 'Ainak', emoji: '👓' },
+  { ch: 'ओ', roman: 'O', word: 'ओस', wordSay: 'Os', emoji: '💧' },
+  { ch: 'औ', roman: 'Au', word: 'औरत', wordSay: 'Aurat', emoji: '👩' },
+  { ch: 'अं', roman: 'An', word: 'अंडा', wordSay: 'Anda', emoji: '🥚' },
+  { ch: 'क', roman: 'Ka', word: 'कमल', wordSay: 'Kamal', emoji: '🪷' },
+  { ch: 'ख', roman: 'Kha', word: 'खरगोश', wordSay: 'Khargosh', emoji: '🐰' },
+  { ch: 'ग', roman: 'Ga', word: 'गमला', wordSay: 'Gamla', emoji: '🪴' },
+  { ch: 'घ', roman: 'Gha', word: 'घर', wordSay: 'Ghar', emoji: '🏠' },
+  { ch: 'ङ', roman: 'Nga', word: '', wordSay: '', emoji: '' },
+  { ch: 'च', roman: 'Cha', word: 'चम्मच', wordSay: 'Chammach', emoji: '🥄' },
+  { ch: 'छ', roman: 'Chha', word: 'छाता', wordSay: 'Chhata', emoji: '☂️' },
+  { ch: 'ज', roman: 'Ja', word: 'जहाज', wordSay: 'Jahaaj', emoji: '✈️' },
+  { ch: 'झ', roman: 'Jha', word: 'झंडा', wordSay: 'Jhanda', emoji: '🚩' },
+  { ch: 'ञ', roman: 'Nya', word: '', wordSay: '', emoji: '' },
+  { ch: 'ट', roman: 'Ta', word: 'टमाटर', wordSay: 'Tamatar', emoji: '🍅' },
+  { ch: 'ठ', roman: 'Tha', word: 'ठेला', wordSay: 'Thela', emoji: '🛒' },
+  { ch: 'ड', roman: 'Da', word: 'डमरू', wordSay: 'Damru', emoji: '🥁' },
+  { ch: 'ढ', roman: 'Dha', word: 'ढोल', wordSay: 'Dhol', emoji: '🪘' },
+  { ch: 'ण', roman: 'Na', word: '', wordSay: '', emoji: '' },
+  { ch: 'त', roman: 'Ta', word: 'तरबूज', wordSay: 'Tarbooj', emoji: '🍉' },
+  { ch: 'थ', roman: 'Tha', word: 'थैला', wordSay: 'Thaila', emoji: '👜' },
+  { ch: 'द', roman: 'Da', word: 'दरवाज़ा', wordSay: 'Darwaza', emoji: '🚪' },
+  { ch: 'ध', roman: 'Dha', word: 'धनुष', wordSay: 'Dhanush', emoji: '🏹' },
+  { ch: 'न', roman: 'Na', word: 'नल', wordSay: 'Nal', emoji: '🚰' },
+  { ch: 'प', roman: 'Pa', word: 'पतंग', wordSay: 'Patang', emoji: '🪁' },
+  { ch: 'फ', roman: 'Pha', word: 'फल', wordSay: 'Phal', emoji: '🍎' },
+  { ch: 'ब', roman: 'Ba', word: 'बतख', wordSay: 'Batakh', emoji: '🦆' },
+  { ch: 'भ', roman: 'Bha', word: 'भालू', wordSay: 'Bhaalu', emoji: '🐻' },
+  { ch: 'म', roman: 'Ma', word: 'मछली', wordSay: 'Machhli', emoji: '🐟' },
+  { ch: 'य', roman: 'Ya', word: 'यान', wordSay: 'Yaan', emoji: '🚀' },
+  { ch: 'र', roman: 'Ra', word: 'राजा', wordSay: 'Raja', emoji: '🤴' },
+  { ch: 'ल', roman: 'La', word: 'लोमड़ी', wordSay: 'Lomdi', emoji: '🦊' },
+  { ch: 'व', roman: 'Va', word: 'वन', wordSay: 'Van', emoji: '🌲' },
+  { ch: 'श', roman: 'Sha', word: 'शेर', wordSay: 'Sher', emoji: '🦁' },
+  { ch: 'ष', roman: 'Sha', word: '', wordSay: '', emoji: '' },
+  { ch: 'स', roman: 'Sa', word: 'सूरज', wordSay: 'Sooraj', emoji: '☀️' },
+  { ch: 'ह', roman: 'Ha', word: 'हाथी', wordSay: 'Haathi', emoji: '🐘' },
+  { ch: 'क्ष', roman: 'Ksha', word: 'क्षत्रिय', wordSay: 'Kshatriya', emoji: '⚔️' },
+  { ch: 'त्र', roman: 'Tra', word: 'त्रिशूल', wordSay: 'Trishul', emoji: '🔱' },
+  { ch: 'ज्ञ', roman: 'Gya', word: 'ज्ञान', wordSay: 'Gyaan', emoji: '📖' }
+];
+
+function varnaPhrase(v) {
+  if (!v.word) return phrase(v.roman + '!', v.ch + '!', v.roman + '!');
+  return phrase(
+    v.roman + '! ' + v.roman + ' se ' + v.wordSay + '!',
+    v.ch + '! ' + v.ch + ' से ' + v.word + '!',
+    v.roman + '! ' + v.roman + ' se ' + v.wordSay + '!'
+  );
+}
+
+/* ---------------- Sticker book ---------------- */
+// Sticker i unlocks at (i+1)*25 stars — derived from the star count, nothing extra stored.
+
+const STICKER_STEP = 25;
+const STICKERS = [
+  { emoji: '⚽', en: 'Ball', hi: 'गेंद', hiSay: 'Gend' },
+  { emoji: '🌟', en: 'Star', hi: 'सितारा', hiSay: 'Sitara' },
+  { emoji: '🪁', en: 'Kite', hi: 'पतंग', hiSay: 'Patang' },
+  { emoji: '🎂', en: 'Cake', hi: 'केक', hiSay: 'Cake' },
+  { emoji: '🦜', en: 'Parrot', hi: 'तोता', hiSay: 'Tota' },
+  { emoji: '⛵', en: 'Boat', hi: 'नाव', hiSay: 'Naav' },
+  { emoji: '🌈', en: 'Rainbow', hi: 'इंद्रधनुष', hiSay: 'Indradhanush' },
+  { emoji: '🧸', en: 'Teddy', hi: 'टेडी', hiSay: 'Teddy' },
+  { emoji: '🍭', en: 'Lollipop', hi: 'लॉलीपॉप', hiSay: 'Lollipop' },
+  { emoji: '🐬', en: 'Dolphin', hi: 'डॉल्फिन', hiSay: 'Dolphin' },
+  { emoji: '🎠', en: 'Carousel', hi: 'झूला', hiSay: 'Jhoola' },
+  { emoji: '🦚', en: 'Peacock', hi: 'मोर', hiSay: 'Mor' },
+  { emoji: '🛸', en: 'UFO', hi: 'यूएफओ', hiSay: 'UFO' },
+  { emoji: '🎪', en: 'Circus', hi: 'सर्कस', hiSay: 'Circus' },
+  { emoji: '🪄', en: 'Magic wand', hi: 'जादू की छड़ी', hiSay: 'Jaadu ki chhadi' },
+  { emoji: '👑', en: 'Crown', hi: 'मुकुट', hiSay: 'Mukut' },
+  { emoji: '🚀', en: 'Rocket', hi: 'रॉकेट', hiSay: 'Rocket' },
+  { emoji: '🦖', en: 'Dino', hi: 'डायनासोर', hiSay: 'Dinosaur' },
+  { emoji: '🦄', en: 'Unicorn', hi: 'यूनिकॉर्न', hiSay: 'Unicorn' },
+  { emoji: '🏆', en: 'Trophy', hi: 'ट्रॉफी', hiSay: 'Trophy' }
+];
+
+Object.assign(T, {
+  newVersion: { en: 'New version ready — reopen the game to update!', hi: 'नया वर्ज़न आ गया — गेम दोबारा खोलें!' },
+  newSticker: { en: 'New sticker unlocked!', hi: 'नया स्टिकर मिला!' },
+  stickerHint: { en: 'Earn 25 stars for each new sticker!', hi: 'हर नए स्टिकर के लिए 25 स्टार कमाओ!' }
+});
+
+GAME_TITLES.stickers = { en: 'Sticker Book', hi: 'स्टिकर बुक', hiSay: 'Sticker book' };

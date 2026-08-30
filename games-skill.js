@@ -19,6 +19,7 @@ const tracingGame = (() => {
     '<div class="tabs" id="tracing-tabs">' +
     '<button class="tab active" data-tab="letters">ABC</button>' +
     '<button class="tab" data-tab="numbers">123</button>' +
+    '<button class="tab" data-tab="varna">कखग</button>' +
     '<button class="tab" data-tab="shapes">🔺</button></div>' +
     '<p class="hint" data-t="traceHint"></p>' +
     '<div id="trace-wrap" data-item="" data-done="0">' +
@@ -32,7 +33,10 @@ const tracingGame = (() => {
   let canvas, ctx, paint, pctx; // paint = offscreen coverage layer
 
   function itemsLen() {
-    return state.tab === 'letters' ? LETTERS.length : state.tab === 'numbers' ? NUMBERS.length : TRACE_SHAPES.length;
+    return state.tab === 'letters' ? LETTERS.length
+      : state.tab === 'numbers' ? NUMBERS.length
+        : state.tab === 'varna' ? VARNAMALA.length
+          : TRACE_SHAPES.length;
   }
 
   function drawGlyph(c) {
@@ -63,7 +67,9 @@ const tracingGame = (() => {
       }
       c.stroke();
     } else {
-      const str = state.tab === 'letters' ? LETTERS[state.idx].ch : String(NUMBERS[state.idx].n);
+      const str = state.tab === 'letters' ? LETTERS[state.idx].ch
+        : state.tab === 'numbers' ? String(NUMBERS[state.idx].n)
+          : VARNAMALA[state.idx].ch;
       c.font = 'bold ' + (str.length > 1 ? 230 : 300) + 'px system-ui, sans-serif';
       c.textAlign = 'center';
       c.textBaseline = 'middle';
@@ -92,7 +98,9 @@ const tracingGame = (() => {
     state.samples = shuffle(pts).slice(0, 260);
     const wrap = $('trace-wrap');
     const label = state.tab === 'letters' ? LETTERS[state.idx].ch
-      : state.tab === 'numbers' ? String(NUMBERS[state.idx].n) : TRACE_SHAPES[state.idx];
+      : state.tab === 'numbers' ? String(NUMBERS[state.idx].n)
+        : state.tab === 'varna' ? VARNAMALA[state.idx].ch
+          : TRACE_SHAPES[state.idx];
     wrap.dataset.item = label;
     wrap.dataset.done = '0';
     // Ordered path of glyph points for automated tests (and future hint arrows)
@@ -108,6 +116,8 @@ const tracingGame = (() => {
     } else if (state.tab === 'numbers') {
       const n = NUMBERS[state.idx];
       sayPhrase(phrase(n.n + '! ' + n.en + '!', n.n + '! ' + n.hi + '!', n.n + '! ' + n.hiSay + '!'));
+    } else if (state.tab === 'varna') {
+      sayPhrase(varnaPhrase(VARNAMALA[state.idx]));
     } else {
       sayPhrase(wordPhrase(SHAPES.find((s) => s.key === TRACE_SHAPES[state.idx])));
     }
@@ -147,6 +157,7 @@ const tracingGame = (() => {
     if (state.done) return;
     if (coverage() >= 0.55) {
       state.done = true;
+      state.drawing = false; // an ongoing drag must not scribble on the next glyph
       $('trace-wrap').dataset.done = '1';
       sfx.correct();
       store.addStars(1);
@@ -157,6 +168,8 @@ const tracingGame = (() => {
         sayPhrase(joinPhrase(rand(PRAISE), phrase(l.ch + '! ' + l.ch + ' for ' + l.en + '!', l.ch + '! ' + l.ch + ' से ' + l.hi + '!', l.ch + '! ' + l.ch + ' se ' + l.hiSay + '!')));
       } else if (state.tab === 'numbers') {
         sayPhrase(joinPhrase(rand(PRAISE), countPhrase(NUMBERS[state.idx].n)));
+      } else if (state.tab === 'varna') {
+        sayPhrase(joinPhrase(rand(PRAISE), varnaPhrase(VARNAMALA[state.idx])));
       } else {
         sayPhrase(joinPhrase(rand(PRAISE), wordPhrase(SHAPES.find((s) => s.key === TRACE_SHAPES[state.idx]))));
       }
@@ -189,8 +202,13 @@ const tracingGame = (() => {
       try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
       strokeTo(pos(e), true);
     });
+    let moveCount = 0;
     canvas.addEventListener('pointermove', (e) => {
-      if (state.drawing) strokeTo(pos(e), false);
+      if (!state.drawing) return;
+      strokeTo(pos(e), false);
+      // Live check so the praise lands the moment the glyph is covered,
+      // without waiting for the child to lift their finger.
+      if (++moveCount % 12 === 0) checkDone();
     });
     ['pointerup', 'pointercancel'].forEach((ev) => canvas.addEventListener(ev, () => {
       if (!state.drawing) return;
@@ -910,4 +928,39 @@ GAMES.rhymes = {
   onLang() { rhymesGame.onLang(); },
   onBack() { return rhymesGame.onBack(); },
   onLeave() { rhymesGame.onLeave(); }
+};
+
+/* ================= Sticker Book ================= */
+
+const stickersGame = (() => {
+  buildScreen('stickers',
+    '<p class="hint" data-t="stickerHint"></p>' +
+    '<div id="sticker-shelf" class="tile-grid" data-unlocked="0"></div>');
+
+  function render() {
+    const unlocked = Math.min(Math.floor(store.getStars() / STICKER_STEP), STICKERS.length);
+    const shelf = $('sticker-shelf');
+    shelf.dataset.unlocked = String(unlocked);
+    shelf.innerHTML = '';
+    STICKERS.forEach((s, i) => {
+      const has = i < unlocked;
+      const b = document.createElement('button');
+      b.className = 'tile sticker-tile' + (has ? '' : ' locked');
+      b.innerHTML = '<span class="t-big' + (has ? '' : ' silhouette') + '">' + s.emoji + '</span>' +
+        '<span class="t-word">' + (has ? s[store.getLang()] : '⭐ ' + ((i + 1) * STICKER_STEP)) + '</span>';
+      b.addEventListener('click', () => {
+        sfx.pop();
+        popIt(b);
+        if (has) sayPhrase(wordPhrase(s));
+      });
+      shelf.appendChild(b);
+    });
+  }
+
+  return { render };
+})();
+
+GAMES.stickers = {
+  emoji: '🏆', color: 'var(--sunny)', screen: 'screen-stickers',
+  enter() { stickersGame.render(); }, onLang() { stickersGame.render(); }
 };

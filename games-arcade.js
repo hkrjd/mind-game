@@ -112,6 +112,19 @@ const skypopGame = (() => {
     pickTarget(false);
     speakTarget();
     state.running = true;
+    // Warm start: the sky should never look empty — three bubbles already rising,
+    // with the target guaranteed among them.
+    for (let i = 0; i < 3; i++) {
+      spawn();
+      const b = state.bubbles[state.bubbles.length - 1];
+      b.y = 70 + i * 120;
+      b.el.style.transform = 'translateY(' + (-b.y) + 'px)';
+    }
+    if (!state.bubbles.some((b) => b.label === state.target)) {
+      const b = state.bubbles[0];
+      b.label = state.target;
+      b.el.textContent = state.target;
+    }
     state.raf = requestAnimationFrame(loop);
   }
 

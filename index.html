@@ -6,6 +6,13 @@
 <title>Khel Khel Mein Seekho 🎈</title>
 <meta name="description" content="A bilingual (Hindi + English) learning game for little kids: ABC, counting, shapes, colors, memory match, animals and sounds.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%8E%88%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#FFF9EC">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Khel Seekho">
 <link rel="stylesheet" href="style.css">
 <script defer src="app.js"></script>
 <script defer src="data2.js"></script>
@@ -18,10 +25,13 @@
 
   <header id="topbar">
     <button id="btn-back" class="icon-btn invisible" aria-label="Back / पीछे">⬅️</button>
-    <div id="star-pill" title="Stars / सितारे">⭐ <span id="star-count">0</span></div>
-    <button id="lang-toggle" aria-label="Language / भाषा">
-      <span class="seg active" data-lang="en">EN</span><span class="seg" data-lang="hi">हि</span>
-    </button>
+    <button id="star-pill" title="Sticker Book / स्टिकर बुक">⭐ <span id="star-count">0</span></button>
+    <div class="top-right">
+      <button id="btn-mute" class="icon-btn" aria-label="Sound / आवाज़">🔊</button>
+      <button id="lang-toggle" aria-label="Language / भाषा">
+        <span class="seg active" data-lang="en">EN</span><span class="seg" data-lang="hi">हि</span>
+      </button>
+    </div>
   </header>
 
   <main id="main">
@@ -36,6 +46,7 @@
       <div class="tabs" role="tablist">
         <button class="tab active" data-tab="letters" role="tab">ABC</button>
         <button class="tab" data-tab="numbers" role="tab">123</button>
+        <button class="tab" data-tab="varna" role="tab">कखग</button>
       </div>
       <div id="abc-grid" class="tile-grid"></div>
       <button id="abc-quiz" class="big-btn quiz-btn" data-t="quizBtn"></button>

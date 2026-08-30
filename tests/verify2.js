@@ -42,7 +42,7 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 24, 'home shows all 24 game cards');
+  ok(await page.locator('#home-grid .game-card').count() === 25, 'home shows all 25 game cards');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -67,6 +67,21 @@ function ok(cond, msg) {
     await home();
   }
 
+  console.log('# devanagari varnamala');
+  await openGame('abc');
+  await page.click('#screen-abc .tab[data-tab="varna"]');
+  ok(await page.locator('#abc-grid .varna-tile').count() === 48, 'varnamala shows 48 letters');
+  await page.click('#abc-grid .varna-tile:nth-child(13)'); // क — speaks, must not crash
+  await page.click('#abc-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'varnamala quiz advances after correct answer');
+  await shot('39-varnamala.png');
+  await back();
+  await page.waitForSelector('#screen-abc.active');
+  await back();
+  await home();
+
   console.log('# tracing');
   await openGame('tracing');
   const traceOnce = async () => {
@@ -89,6 +104,9 @@ function ok(cond, msg) {
   await shot('22-tracing.png');
   await page.click('#tracing-tabs .tab[data-tab="numbers"]');
   ok(await page.getAttribute('#trace-wrap', 'data-item') === '1', 'tracing 123 tab shows number 1');
+  await page.click('#tracing-tabs .tab[data-tab="varna"]');
+  ok(await page.getAttribute('#trace-wrap', 'data-item') === 'अ', 'tracing कखग tab shows अ');
+  await shot('40-tracing-varna.png');
   await back();
   await home();
 
@@ -202,6 +220,7 @@ function ok(cond, msg) {
 
   console.log('# sky pop');
   await openGame('skypop');
+  ok(await page.locator('#skypop-area .bubble').count() >= 3, 'sky starts with bubbles already floating');
   await page.waitForFunction(() => {
     const area = document.getElementById('skypop-area');
     const t = area.dataset.target;
@@ -336,6 +355,38 @@ function ok(cond, msg) {
   await page.click('#draw-clear');
   await back();
   await home();
+
+  console.log('# mute toggle');
+  await page.click('#btn-mute');
+  ok((await page.textContent('#btn-mute')).includes('🔇'), 'mute button switches to muted');
+  ok(await page.evaluate(() => store.getMute()), 'mute state persisted in store');
+  await page.click('#btn-mute');
+  ok((await page.textContent('#btn-mute')).includes('🔊'), 'mute button switches back to sound on');
+
+  console.log('# sticker book');
+  const starsNow = parseInt(await page.textContent('#star-count'), 10);
+  const expectUnlocked = Math.min(Math.floor(starsNow / 25), 20);
+  await openGame('stickers');
+  ok(await page.locator('#sticker-shelf .sticker-tile').count() === 20, 'sticker shelf shows 20 stickers');
+  ok(await page.getAttribute('#sticker-shelf', 'data-unlocked') === String(expectUnlocked),
+    'unlocked count matches stars (' + starsNow + ' stars -> ' + expectUnlocked + ')');
+  await back();
+  await home();
+  await page.evaluate(() => store.addStars(25));
+  ok(await page.evaluate(() => document.getElementById('toast').classList.contains('show')),
+    'earning 25 stars pops the new-sticker toast');
+  await openGame('stickers');
+  ok(await page.getAttribute('#sticker-shelf', 'data-unlocked') === String(expectUnlocked + 1),
+    'a new sticker is unlocked after +25 stars');
+  await shot('41-stickers.png');
+  await back();
+  await home();
+
+  console.log('# phone back button (history)');
+  await openGame('fruits');
+  await page.goBack();
+  await home();
+  ok(true, 'browser/phone back returns to home instead of leaving the app');
 
   console.log('# hindi smoke over new games');
   await page.click('#lang-toggle');
