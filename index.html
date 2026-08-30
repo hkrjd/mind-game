@@ -8,6 +8,10 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%8E%88%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 <script defer src="app.js"></script>
+<script defer src="data2.js"></script>
+<script defer src="games-vocab.js"></script>
+<script defer src="games-skill.js"></script>
+<script defer src="games-arcade.js"></script>
 </head>
 <body>
 <div id="app">
@@ -34,23 +38,23 @@
         <button class="tab" data-tab="numbers" role="tab">123</button>
       </div>
       <div id="abc-grid" class="tile-grid"></div>
-      <button id="abc-quiz" class="big-btn quiz-btn"></button>
+      <button id="abc-quiz" class="big-btn quiz-btn" data-t="quizBtn"></button>
     </section>
 
     <section id="screen-shapes" class="screen">
       <div id="shapes-grid" class="tile-grid"></div>
       <div id="colors-row"></div>
-      <button id="shapes-quiz" class="big-btn quiz-btn"></button>
+      <button id="shapes-quiz" class="big-btn quiz-btn" data-t="quizBtn"></button>
     </section>
 
     <section id="screen-memory" class="screen">
-      <p id="memory-hint" class="hint"></p>
+      <p id="memory-hint" class="hint" data-t="memoryHint"></p>
       <div id="memory-grid"></div>
     </section>
 
     <section id="screen-animals" class="screen">
       <div id="animals-grid" class="tile-grid"></div>
-      <button id="animals-quiz" class="big-btn quiz-btn"></button>
+      <button id="animals-quiz" class="big-btn quiz-btn" data-t="quizBtn"></button>
     </section>
 
     <section id="screen-quiz" class="screen">
@@ -70,10 +74,10 @@
   <div id="celebrate" class="overlay" aria-hidden="true">
     <div class="overlay-card">
       <div id="celebrate-stars" aria-hidden="true"></div>
-      <h2 id="celebrate-title"></h2>
+      <h2 id="celebrate-title" data-t="celebrate"></h2>
       <div class="overlay-btns">
-        <button id="btn-again" class="big-btn"></button>
-        <button id="btn-cele-home" class="big-btn alt"></button>
+        <button id="btn-again" class="big-btn" data-t="again"></button>
+        <button id="btn-cele-home" class="big-btn alt" data-t="homeBtn"></button>
       </div>
     </div>
   </div>

@@ -1,0 +1,361 @@
+'use strict';
+/* Playwright test for the 20 new games. Run from the repo root:
+   PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers NODE_PATH=/opt/node22/lib/node_modules node tests/verify2.js */
+const path = require('path');
+const fs = require('fs');
+const { chromium } = require('playwright');
+
+const ROOT = path.join(__dirname, '..');
+const SHOTS = path.join(__dirname, 'screenshots');
+
+let passed = 0;
+function ok(cond, msg) {
+  if (!cond) throw new Error('ASSERT FAIL: ' + msg);
+  passed++;
+  console.log('  ok - ' + msg);
+}
+
+(async () => {
+  fs.mkdirSync(SHOTS, { recursive: true });
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 900, height: 760 } });
+  const errors = [];
+  page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
+  page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+
+  const shot = (name) => page.screenshot({ path: path.join(SHOTS, name), animations: 'disabled' });
+  const back = async () => { await page.click('#btn-back'); };
+  const home = async () => { await page.waitForSelector('#screen-home.active'); };
+  const openGame = async (id) => {
+    await page.click('#home-grid .game-card[data-game="' + id + '"]');
+    await page.waitForSelector('#screen-' + id + '.active');
+  };
+  const answerQuiz = async (qnum) => {
+    await page.waitForFunction((n) => {
+      const el = document.getElementById('quiz-choices');
+      return el && el.dataset.qnum === String(n);
+    }, qnum);
+    const answer = await page.getAttribute('#quiz-choices', 'data-answer');
+    await page.click('#quiz-choices .quiz-tile[data-key="' + answer + '"]');
+  };
+
+  console.log('# load');
+  await page.goto('file://' + path.join(ROOT, 'index.html'));
+  await page.waitForSelector('#home-grid .game-card');
+  ok(await page.locator('#home-grid .game-card').count() === 24, 'home shows all 24 game cards');
+  await shot('20-home-all.png');
+
+  console.log('# vocab packs');
+  await openGame('fruits');
+  ok(await page.locator('#fruits-grid .tile').count() === 12, 'fruits tab: 12 tiles');
+  await page.click('#fruits-grid .tile:nth-child(2)');
+  await page.click('#fruits-tabs .tab[data-tab="sabzi"]');
+  ok(await page.locator('#fruits-grid .tile').count() === 12, 'veggies tab: 12 tiles');
+  await shot('21-fruits.png');
+  await page.click('#fruits-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'fruits quiz advances after correct answer');
+  await back();
+  await back();
+  await home();
+  for (const [id, n] of [['body', 12], ['objects', 12], ['flowers', 8]]) {
+    await openGame(id);
+    ok(await page.locator('#' + id + '-grid .tile').count() === n, id + ': ' + n + ' tiles');
+    await page.click('#' + id + '-grid .tile:nth-child(1)');
+    await back();
+    await home();
+  }
+
+  console.log('# tracing');
+  await openGame('tracing');
+  const traceOnce = async () => {
+    const box = await page.locator('#trace-canvas').boundingBox();
+    const pts = JSON.parse(await page.getAttribute('#trace-wrap', 'data-testpath'));
+    const scale = box.width / 360;
+    for (const pass of [0, 1]) {
+      const seq = pass === 0 ? pts : pts.slice().reverse();
+      await page.mouse.move(box.x + seq[0][0] * scale, box.y + seq[0][1] * scale);
+      await page.mouse.down();
+      for (const [px, py] of seq) {
+        await page.mouse.move(box.x + (px + (pass ? 5 : 0)) * scale, box.y + py * scale);
+      }
+      await page.mouse.up();
+      if (await page.getAttribute('#trace-wrap', 'data-done') === '1') return true;
+    }
+    return await page.getAttribute('#trace-wrap', 'data-done') === '1';
+  };
+  ok(await traceOnce(), 'tracing letter A reaches coverage -> done');
+  await shot('22-tracing.png');
+  await page.click('#tracing-tabs .tab[data-tab="numbers"]');
+  ok(await page.getAttribute('#trace-wrap', 'data-item') === '1', 'tracing 123 tab shows number 1');
+  await back();
+  await home();
+
+  console.log('# word banao (spelling)');
+  await openGame('spelling');
+  const word = await page.getAttribute('#spell-slots', 'data-word');
+  ok(word && word.length >= 3, 'spelling shows a word: ' + word);
+  const wrongL = await page.$$eval('#spell-bank .bank-tile', (els, w) => {
+    const t = els.find((e) => !w.includes(e.dataset.l));
+    return t ? t.dataset.l : null;
+  }, word);
+  if (wrongL) {
+    await page.click('#spell-bank .bank-tile[data-l="' + wrongL + '"]');
+    ok(await page.getAttribute('#spell-slots', 'data-filled') === '0', 'wrong letter does not fill a slot');
+  }
+  for (const ch of word.split('')) {
+    await page.click('#spell-bank .bank-tile[data-l="' + ch + '"]:not(.used)');
+  }
+  ok(await page.getAttribute('#spell-slots', 'data-filled') === String(word.length), 'word completed: ' + word);
+  await shot('23-spelling.png');
+  await back();
+  await home();
+
+  console.log('# phonics');
+  await openGame('phonics');
+  await page.click('#phonics-start');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'phonics quiz advances');
+  await shot('24-phonics.png');
+  await back();
+  await back();
+  await home();
+
+  console.log('# bada-chhota (capital/small)');
+  await openGame('capsmall');
+  const capL = await page.getAttribute('#cs-caps .cs-tile:nth-child(1)', 'data-l');
+  await page.click('#cs-caps .cs-tile:nth-child(1)');
+  await page.click('#cs-smalls .cs-tile[data-l="' + capL + '"]');
+  ok(await page.getAttribute('#cs-area', 'data-matched') === '1', 'capital ' + capL + ' matched with its small letter');
+  await shot('25-capsmall.png');
+  await back();
+  await home();
+
+  console.log('# shadow match');
+  await openGame('shadow');
+  ok(await page.locator('#shadow-items .shadow-tile').count() === 6, 'shadow: 6 items');
+  const shK = await page.getAttribute('#shadow-items .shadow-tile:nth-child(1)', 'data-k');
+  await page.click('#shadow-items .shadow-tile:nth-child(1)');
+  await page.click('#shadow-shadows .shadow-tile[data-k="' + shK + '"]');
+  ok(await page.getAttribute('#shadow-area', 'data-matched') === '1', 'shadow matched for ' + shK);
+  await shot('26-shadow.png');
+  await back();
+  await home();
+
+  console.log('# jod-ghatao (math)');
+  await openGame('math');
+  await page.click('#math-plus');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'addition quiz advances');
+  await shot('27-math.png');
+  await back();
+  await page.waitForSelector('#screen-math.active');
+  await page.click('#math-minus');
+  ok((await page.textContent('#quiz-extra')).includes('−'), 'subtraction question shows minus equation');
+  await answerQuiz(1);
+  await back();
+  await page.waitForSelector('#screen-math.active');
+  await back();
+  await home();
+
+  console.log('# clock');
+  await openGame('clock');
+  await page.click('#clock-hours .hour-btn[data-h="5"]');
+  ok(await page.getAttribute('#clock-face', 'data-hour') === '5', 'clock hands move to 5 o\'clock');
+  await shot('28-clock.png');
+  await page.click('#clock-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'clock quiz advances');
+  await back();
+  await back();
+  await home();
+
+  console.log('# ginti 1-100');
+  await openGame('board100');
+  ok(await page.locator('#board-grid .num-cell').count() === 100, 'board shows 100 numbers');
+  await page.click('#board-grid .num-cell[data-n="7"]');
+  await page.click('#board-find');
+  const target = await page.getAttribute('#board-grid', 'data-target');
+  await page.click('#board-grid .num-cell[data-n="' + target + '"]');
+  ok(await page.getAttribute('#board-grid', 'data-found') === '1', 'found number ' + target + ' on the board');
+  await shot('29-board100.png');
+  await back();
+  await home();
+
+  console.log('# rhymes');
+  await openGame('rhymes');
+  ok(await page.locator('#rhymes-list .rhyme-card').count() === 4, '4 rhymes listed');
+  await page.click('#rhymes-list .rhyme-card[data-rhyme="machhli"]');
+  await page.waitForSelector('#rhyme-view:not([hidden])');
+  await page.click('#rhyme-lines .rline:nth-child(1)');
+  ok(await page.getAttribute('#rhyme-view', 'data-line') === '0', 'tapping a line highlights it');
+  await shot('30-rhymes.png');
+  await back(); // closes rhyme view
+  await page.waitForSelector('#rhymes-list:not([hidden])');
+  ok(true, 'back from rhyme returns to rhyme list');
+  await back();
+  await home();
+
+  console.log('# sky pop');
+  await openGame('skypop');
+  await page.waitForFunction(() => {
+    const area = document.getElementById('skypop-area');
+    const t = area.dataset.target;
+    return Array.from(area.querySelectorAll('.bubble')).some((b) => b.textContent === t);
+  }, { timeout: 15000 });
+  await shot('31-skypop.png');
+  await page.evaluate(() => {
+    const area = document.getElementById('skypop-area');
+    const t = area.dataset.target;
+    Array.from(area.querySelectorAll('.bubble')).find((b) => b.textContent === t).click();
+  });
+  ok(await page.getAttribute('#skypop-area', 'data-popped') === '1', 'popped the right bubble');
+  await back();
+  await home();
+
+  console.log('# maze');
+  await openGame('maze');
+  const n = Number(await page.getAttribute('#maze-grid', 'data-size'));
+  const walls = await page.$$eval('#maze-grid .maze-cell', (els) => els.map((e) => e.dataset.walls));
+  // BFS shortest path 0 -> n*n-1
+  const prev = new Array(n * n).fill(-1);
+  const q = [0];
+  prev[0] = 0;
+  while (q.length) {
+    const cur = q.shift();
+    const r = Math.floor(cur / n);
+    const c = cur % n;
+    const opts = [
+      [!walls[cur].includes('N') && r > 0, cur - n],
+      [!walls[cur].includes('S') && r < n - 1, cur + n],
+      [!walls[cur].includes('W') && c > 0, cur - 1],
+      [!walls[cur].includes('E') && c < n - 1, cur + 1]
+    ];
+    for (const [okMove, nxt] of opts) {
+      if (okMove && prev[nxt] === -1) { prev[nxt] = cur; q.push(nxt); }
+    }
+  }
+  const pathCells = [];
+  for (let v = n * n - 1; v !== 0; v = prev[v]) pathCells.unshift(v);
+  ok(prev[n * n - 1] !== -1, 'maze has a path (' + pathCells.length + ' steps)');
+  let cur = 0;
+  for (const nxt of pathCells) {
+    const d = nxt === cur - n ? 'up' : nxt === cur + n ? 'down' : nxt === cur - 1 ? 'left' : 'right';
+    await page.click('#maze-arrows .maze-arrow[data-d="' + d + '"]');
+    cur = nxt;
+  }
+  ok(await page.getAttribute('#maze-grid', 'data-solved') === '1', 'maze level 1 solved via arrows');
+  await shot('32-maze.png');
+  await page.waitForFunction(() => document.getElementById('maze-grid').dataset.level === '2');
+  ok(true, 'maze advances to level 2');
+  await back();
+  await home();
+
+  console.log('# tower');
+  await openGame('tower');
+  const tbox = await page.locator('#tower-area').boundingBox();
+  await page.mouse.click(tbox.x + tbox.width / 2, tbox.y + tbox.height / 2);
+  await page.waitForFunction(() => document.getElementById('tower-area').dataset.floors === '1');
+  ok(true, 'first block lands (floor 1)');
+  // wait until the mover lines up with the placed block, then drop again
+  await page.waitForFunction(() => {
+    const m = document.getElementById('tower-mover');
+    const b = document.querySelector('.tower-block');
+    if (!m || !b) return false;
+    const mx = new DOMMatrixReadOnly(getComputedStyle(m).transform).m41;
+    return Math.abs(mx - parseFloat(b.style.left)) < 18;
+  }, { timeout: 20000 });
+  await page.mouse.click(tbox.x + tbox.width / 2, tbox.y + tbox.height / 2);
+  await page.waitForFunction(() => document.getElementById('tower-area').dataset.floors === '2');
+  ok(true, 'second block stacks (floor 2)');
+  await shot('33-tower.png');
+  await back();
+  await home();
+
+  console.log('# puzzle');
+  await openGame('puzzle');
+  for (let guard = 0; guard < 12; guard++) {
+    const order = await page.$$eval('#puzzle-board .puz-tile', (els) => els.map((e) => Number(e.dataset.pos)));
+    const i = order.findIndex((v, k) => v !== k);
+    if (i === -1) break;
+    const j = order.indexOf(i);
+    await page.click('#puzzle-board .puz-tile[data-i="' + i + '"]');
+    await page.click('#puzzle-board .puz-tile[data-i="' + j + '"]');
+  }
+  ok(await page.getAttribute('#puzzle-board', 'data-solved') === '1', 'puzzle picture 1 solved by swapping');
+  await shot('34-puzzle.png');
+  await back();
+  await home();
+
+  console.log('# gardener');
+  await openGame('gardener');
+  const gbox = await page.locator('#garden-scene').boundingBox();
+  await page.mouse.move(gbox.x + gbox.width * 0.1, gbox.y + gbox.height * 0.4);
+  await page.mouse.down();
+  await page.waitForFunction(() => {
+    const s = document.getElementById('garden-scene').dataset.stages.split(',');
+    return s[0] === '3';
+  }, { timeout: 8000 });
+  await page.mouse.up();
+  ok(true, 'holding rain grows the first plant to bloom');
+  await shot('35-gardener.png');
+  await back();
+  await home();
+
+  console.log('# traffic');
+  await openGame('traffic');
+  ok(await page.getAttribute('#traffic-scene', 'data-light') === 'red', 'traffic starts on red');
+  await page.click('#traffic-go'); // pressing on red must not drive
+  ok(await page.getAttribute('#traffic-scene', 'data-cross') === '0', 'GO on red does not cross');
+  await page.waitForFunction(() => document.getElementById('traffic-scene').dataset.light === 'green', { timeout: 15000 });
+  await page.click('#traffic-go');
+  await page.waitForFunction(() => document.getElementById('traffic-scene').dataset.cross === '1');
+  ok(true, 'GO on green crosses the road');
+  await shot('36-traffic.png');
+  await back();
+  await home();
+
+  console.log('# drawing');
+  await openGame('drawing');
+  const dbox = await page.locator('#draw-canvas').boundingBox();
+  await page.mouse.move(dbox.x + 60, dbox.y + 60);
+  await page.mouse.down();
+  await page.mouse.move(dbox.x + 200, dbox.y + 160);
+  await page.mouse.up();
+  await page.click('#draw-glow');
+  ok(await page.getAttribute('#draw-canvas', 'data-mode') === 'glow', 'glow mode toggles');
+  await page.mouse.move(dbox.x + 80, dbox.y + 120);
+  await page.mouse.down();
+  await page.mouse.move(dbox.x + 240, dbox.y + 200);
+  await page.mouse.up();
+  await shot('37-drawing.png');
+  await page.click('#draw-clear');
+  await back();
+  await home();
+
+  console.log('# hindi smoke over new games');
+  await page.click('#lang-toggle');
+  await openGame('fruits');
+  await page.click('#fruits-grid .tile:nth-child(1)');
+  const tabTxt = await page.textContent('#fruits-tabs .tab[data-tab="phal"]');
+  ok(/[ऀ-ॿ]/.test(tabTxt), 'fruits tab label switches to Devanagari: ' + tabTxt);
+  await shot('38-hindi-fruits.png');
+  await back();
+  await home();
+  await page.click('#lang-toggle'); // back to EN
+
+  await browser.close();
+
+  if (errors.length) {
+    console.error('\nPAGE ERRORS:\n' + errors.join('\n'));
+    process.exit(1);
+  }
+  console.log('\nALL PASS (' + passed + ' assertions, 0 page errors). Screenshots in tests/screenshots/');
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

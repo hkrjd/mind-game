@@ -405,7 +405,17 @@ function shapeSVG(shapeKey, hex) {
 
 let currentScreen = 'screen-home';
 
+function activeGameId() {
+  return Object.keys(GAMES).find((id) => GAMES[id].screen === currentScreen) || null;
+}
+
 function showScreen(id) {
+  if (id !== currentScreen) {
+    const prev = activeGameId();
+    if (prev && GAMES[prev].onLeave) {
+      try { GAMES[prev].onLeave(); } catch (e) { /* ignore */ }
+    }
+  }
   speech.stop();
   currentScreen = id;
   document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
@@ -416,9 +426,22 @@ function goBack() {
   sfx.pop();
   if (currentScreen === 'screen-quiz' && quiz.cfg) {
     showScreen(quiz.cfg.backTo);
-  } else {
-    showScreen('screen-home');
+    return;
   }
+  const gid = activeGameId();
+  // A game can intercept back (e.g. an inner view returns to its own list first).
+  if (gid && GAMES[gid].onBack && GAMES[gid].onBack()) return;
+  showScreen('screen-home');
+}
+
+// Later game scripts create their own <section class="screen"> with this.
+function buildScreen(id, html) {
+  const s = document.createElement('section');
+  s.id = 'screen-' + id;
+  s.className = 'screen';
+  s.innerHTML = html;
+  $('main').appendChild(s);
+  return s;
 }
 
 /* ---------------- Celebration overlay ---------------- */
@@ -886,11 +909,37 @@ const animalsGame = {
 /* ---------------- Home & language ---------------- */
 
 const GAMES = {
-  abc: { emoji: '🔤', color: 'var(--sky)', screen: 'screen-abc', enter() { abcGame.render(); } },
-  shapes: { emoji: '🔺', color: 'var(--coral)', screen: 'screen-shapes', enter() { shapesGame.render(); } },
+  abc: { emoji: '🔤', color: 'var(--sky)', screen: 'screen-abc', enter() { abcGame.render(); }, onLang() { abcGame.render(); } },
+  shapes: { emoji: '🔺', color: 'var(--coral)', screen: 'screen-shapes', enter() { shapesGame.render(); }, onLang() { shapesGame.render(); } },
   memory: { emoji: '🧠', color: 'var(--lilac)', screen: 'screen-memory', enter() { memoryGame.newGame(); } },
-  animals: { emoji: '🦁', color: 'var(--mint)', screen: 'screen-animals', enter() { animalsGame.render(); } }
+  animals: { emoji: '🦁', color: 'var(--mint)', screen: 'screen-animals', enter() { animalsGame.render(); }, onLang() { animalsGame.render(); } }
 };
+
+// Home layout: sections rendered in this order; ids missing from GAMES are skipped,
+// so this list can name games that a later script registers.
+const HOME_SECTIONS = [
+  { title: { en: '📚 ABC & Words', hi: '📚 ABC और शब्द' }, games: ['abc', 'tracing', 'spelling', 'phonics', 'capsmall'] },
+  { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'board100', 'clock', 'tower'] },
+  { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'traffic'] },
+  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['memory', 'puzzle', 'maze', 'shadow', 'skypop', 'drawing', 'gardener', 'rhymes'] }
+];
+
+function gameCard(id) {
+  const g = GAMES[id];
+  const b = document.createElement('button');
+  b.className = 'game-card';
+  b.dataset.game = id;
+  b.style.background = g.color;
+  b.innerHTML = '<span class="g-emoji">' + g.emoji + '</span>' +
+    '<span class="g-title">' + GAME_TITLES[id][store.getLang()] + '</span>';
+  b.addEventListener('click', () => {
+    sfx.pop();
+    g.enter();
+    showScreen(g.screen);
+    sayPhrase(GAME_TITLES[id]);
+  });
+  return b;
+}
 
 function renderHome() {
   const lang = store.getLang();
@@ -898,21 +947,17 @@ function renderHome() {
   $('home-sub').textContent = T.subtitle[lang];
   const grid = $('home-grid');
   grid.innerHTML = '';
-  Object.keys(GAMES).forEach((id) => {
-    const g = GAMES[id];
-    const b = document.createElement('button');
-    b.className = 'game-card';
-    b.dataset.game = id;
-    b.style.background = g.color;
-    b.innerHTML = '<span class="g-emoji">' + g.emoji + '</span>' +
-      '<span class="g-title">' + GAME_TITLES[id][lang] + '</span>';
-    b.addEventListener('click', () => {
-      sfx.pop();
-      g.enter();
-      showScreen(g.screen);
-      sayPhrase(GAME_TITLES[id]);
-    });
-    grid.appendChild(b);
+  HOME_SECTIONS.forEach((sec) => {
+    const ids = sec.games.filter((id) => GAMES[id]);
+    if (!ids.length) return;
+    const h = document.createElement('h2');
+    h.className = 'home-cat';
+    h.textContent = sec.title[lang];
+    grid.appendChild(h);
+    const row = document.createElement('div');
+    row.className = 'cat-grid';
+    ids.forEach((id) => row.appendChild(gameCard(id)));
+    grid.appendChild(row);
   });
 }
 
@@ -922,18 +967,15 @@ function applyLang() {
   document.querySelectorAll('#lang-toggle .seg').forEach((s) => {
     s.classList.toggle('active', s.dataset.lang === lang);
   });
-  $('abc-quiz').textContent = T.quizBtn[lang];
-  $('shapes-quiz').textContent = T.quizBtn[lang];
-  $('animals-quiz').textContent = T.quizBtn[lang];
-  $('memory-hint').textContent = T.memoryHint[lang];
-  $('btn-again').textContent = T.again[lang];
-  $('btn-cele-home').textContent = T.homeBtn[lang];
-  $('celebrate-title').textContent = T.celebrate[lang];
+  // Every element tagged data-t="key" takes its label from the T dictionary.
+  document.querySelectorAll('[data-t]').forEach((el) => {
+    const s = T[el.dataset.t];
+    if (s && s[lang]) el.textContent = s[lang];
+  });
   renderHome();
-  // Refresh whatever screen is open (memory keeps its board — only the hint changes).
-  if (currentScreen === 'screen-abc') abcGame.render();
-  else if (currentScreen === 'screen-shapes') shapesGame.render();
-  else if (currentScreen === 'screen-animals') animalsGame.render();
+  // Refresh whatever screen is open (stateful boards keep their state).
+  const gid = activeGameId();
+  if (gid && GAMES[gid].onLang) GAMES[gid].onLang();
   else if (currentScreen === 'screen-quiz') quiz.relabel();
 }
 
