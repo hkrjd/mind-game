@@ -65,11 +65,13 @@ When the game is hosted on HTTPS (GitHub Pages works), it is a full **PWA**:
 
 It gets its own icon, opens fullscreen without the browser bar, and **works completely offline** after the first visit.
 
-### 🔊 Getting the Hindi voice / हिंदी आवाज़
+### 🔊 Voices / आवाज़ें
 
-The game uses the voices installed on your device. If no Hindi voice is found, it automatically speaks Hindi words in a friendly romanized way ("Seb", "Haathi") with an English voice and shows a small note.
+The game speaks with the voices installed on your device, and it **automatically prefers Indian voices**: Indian English (en-IN) first — and if only a Hindi voice exists, English is spoken with it too, so the accent stays familiar. Natural/Google/Microsoft voices are preferred over robotic ones.
 
-To install a real Hindi voice:
+Tap **⚙️ Voice & Sound** at the bottom of the home screen to **pick and test** the English/Hindi voice yourself and set the speaking speed (🐢 slow / 🙂 normal / 🐇 fast) — the choice is remembered.
+
+If no Hindi voice is found, the game speaks Hindi words in a friendly romanized way ("Seb", "Haathi") with an English voice and shows install steps in the ⚙️ screen. To install a real Hindi voice:
 - **Android**: Settings → System → Languages → Text-to-speech → Google TTS → install **Hindi**
 - **iPhone/iPad**: Settings → Accessibility → Spoken Content → Voices → add **Hindi**
 - **Windows**: Settings → Time & Language → Speech → Add voices → **Hindi**
@@ -83,7 +85,7 @@ A minute later the game is live at `https://<your-username>.github.io/mind-game/
 ## 🛠️ Tech notes
 
 - Zero-build vanilla HTML/CSS/JS — no frameworks, no assets: emoji for pictures, SVG/canvas for shapes and puzzles, Web Speech API for voices, Web Audio API for jingles.
-- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
+- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
 - Works fully offline: from `file://` directly, and as an installed PWA via the service worker. Degrades gracefully when speech/audio/localStorage are unavailable.
 - **When deploying an update, bump `VERSION` in `sw.js`** so installed apps fetch the new files.
 - Smoke tests (drive every game headlessly and screenshot each screen):

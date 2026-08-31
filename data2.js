@@ -373,3 +373,23 @@ Object.assign(T, {
 });
 
 GAME_TITLES.stickers = { en: 'Sticker Book', hi: 'स्टिकर बुक', hiSay: 'Sticker book' };
+
+/* ---------------- Voice settings strings ---------------- */
+
+Object.assign(T, {
+  settingsBtn: { en: '⚙️ Voice & Sound', hi: '⚙️ आवाज़ सेटिंग' },
+  settingsTitle: { en: 'Voice & Sound', hi: 'आवाज़ सेटिंग' },
+  enVoiceLabel: { en: 'English voice', hi: 'English आवाज़' },
+  hiVoiceLabel: { en: 'Hindi voice', hi: 'हिंदी आवाज़' },
+  speedLabel: { en: 'Speaking speed', hi: 'बोलने की रफ़्तार' },
+  slowChip: { en: '🐢 Slow', hi: '🐢 धीरे' },
+  normalChip: { en: '🙂 Normal', hi: '🙂 सामान्य' },
+  fastChip: { en: '🐇 Fast', hi: '🐇 तेज़' },
+  testBtn: { en: 'Listen', hi: 'सुनो' },
+  noVoices: { en: 'No voices found on this device yet.', hi: 'इस डिवाइस पर अभी कोई आवाज़ नहीं मिली।' },
+  hiMissingTitle: { en: 'No Hindi voice on this device', hi: 'इस डिवाइस पर हिंदी आवाज़ नहीं है' },
+  hiMissingBody: {
+    en: 'Android: Settings → System → Languages → Text-to-speech → Google TTS → install Hindi. iPhone: Settings → Accessibility → Spoken Content → Voices → Hindi. Windows: Settings → Time & Language → Speech → Add voices → Hindi. Then reopen the game.',
+    hi: 'Android: Settings → System → Languages → Text-to-speech → Google TTS → Hindi install करें। iPhone: Settings → Accessibility → Spoken Content → Voices → Hindi। Windows: Settings → Time & Language → Speech → Add voices → Hindi। फिर गेम दोबारा खोलें।'
+  }
+});

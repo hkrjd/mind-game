@@ -384,6 +384,18 @@ function ok(cond, msg) {
   await page.click('#btn-mute');
   ok((await page.textContent('#btn-mute')).includes('🔊'), 'mute button switches back to sound on');
 
+  console.log('# voice settings');
+  await page.click('#btn-settings');
+  await page.waitForSelector('#screen-settings.active');
+  ok(await page.locator('#set-en-list .hint').count() === 1, 'no-voice placeholder shows (headless has no voices)');
+  ok(await page.locator('#set-hi-missing').isVisible(), 'Hindi install guidance shows when no Hindi voice');
+  await page.click('#set-speed .speed-chip[data-rate="0.7"]');
+  ok(await page.evaluate(() => store.getRate()) === 0.7, 'speed choice persists (0.7 slow)');
+  await page.click('#set-speed .speed-chip[data-rate="0.85"]');
+  await shot('43-settings.png');
+  await back();
+  await home();
+
   console.log('# sticker book');
   const starsNow = parseInt(await page.textContent('#star-count'), 10);
   const expectUnlocked = Math.min(Math.floor(starsNow / 25), 20);
@@ -419,6 +431,36 @@ function ok(cond, msg) {
   await back();
   await home();
   await page.click('#lang-toggle'); // back to EN
+
+  console.log('# indian voice picking (mocked voices)');
+  const p2 = await browser.newPage({ viewport: { width: 900, height: 700 } });
+  p2.on('pageerror', (e) => errors.push('p2 pageerror: ' + e.message));
+  p2.on('console', (m) => { if (m.type() === 'error') errors.push('p2 console: ' + m.text()); });
+  await p2.addInitScript(() => {
+    const mk = (name, lang, local) => ({ name, lang, localService: local, voiceURI: name, default: false });
+    const fake = [
+      mk('BasicUS', 'en-US', true),
+      mk('Google हिन्दी', 'hi-IN', true),
+      mk('Google English India', 'en-IN', true)
+    ];
+    try { window.speechSynthesis.getVoices = () => fake; } catch (e) { /* ignore */ }
+  });
+  await p2.goto('file://' + path.join(ROOT, 'index.html'));
+  await p2.waitForSelector('#home-grid .game-card');
+  const curV = await p2.evaluate(() => speech.current());
+  ok(curV.en && curV.en.name === 'Google English India', 'en-IN voice auto-picked over en-US (' + (curV.en && curV.en.name) + ')');
+  ok(curV.hi && curV.hi.name === 'Google हिन्दी', 'hi-IN voice auto-picked');
+  await p2.evaluate(() => speech.setPreferred('en', 'BasicUS'));
+  ok((await p2.evaluate(() => speech.current().en.name)) === 'BasicUS', 'parent voice override applies instantly');
+  await p2.reload();
+  await p2.waitForSelector('#home-grid .game-card');
+  ok((await p2.evaluate(() => speech.current().en.name)) === 'BasicUS', 'voice override persists after reload');
+  await p2.click('#btn-settings');
+  await p2.waitForSelector('#screen-settings.active');
+  ok(await p2.locator('#set-en-list .voice-opt').count() === 3, 'settings lists all 3 voices for English');
+  ok(await p2.locator('#set-hi-list .voice-opt').count() === 1, 'settings lists the Hindi voice');
+  ok(await p2.locator('#set-hi-missing').isHidden(), 'install guidance hidden when Hindi voice exists');
+  await p2.close();
 
   await browser.close();
 

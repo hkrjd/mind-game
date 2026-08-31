@@ -1013,3 +1013,52 @@ button {
 .tr-eq { font-size: 1.35rem; white-space: nowrap; }
 .tr-words { font-size: .95rem; opacity: .75; font-weight: 600; text-align: right; }
 .tables-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+/* ---- Voice & Sound settings ---- */
+.settings-link {
+  margin-top: 18px;
+  background: var(--card);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+  padding: 10px 22px;
+  font-size: 1rem;
+  opacity: .85;
+}
+.set-title { margin: 0; font-size: 1.5rem; }
+.set-block {
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  padding: 14px 16px;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.set-block h3 { margin: 0; font-size: 1.05rem; opacity: .8; }
+.voice-list { display: flex; flex-direction: column; gap: 8px; }
+.voice-opt {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg1);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: .98rem;
+  text-align: left;
+}
+.voice-opt.selected { background: var(--sunny); box-shadow: 0 2px 0 rgba(0, 0, 0, .1); }
+.vo-lang { font-size: .8rem; opacity: .6; flex-shrink: 0; }
+.set-test { align-self: flex-start; padding: 10px 20px; min-height: 48px; font-size: 1.05rem; }
+.set-missing { background: #FFF3E0; border-radius: 12px; padding: 10px 14px; font-size: .9rem; }
+.set-missing p { margin: 6px 0 0; font-weight: 600; opacity: .8; }
+.speed-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.speed-chip {
+  background: var(--bg1);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 1rem;
+}
+.speed-chip.selected { background: var(--mint); color: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .1); }

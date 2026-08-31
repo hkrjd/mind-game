@@ -194,7 +194,14 @@ const store = (() => {
     getLang() { return get('mg-lang', 'en') === 'hi' ? 'hi' : 'en'; },
     setLang(l) { set('mg-lang', l); },
     getMute() { return get('mg-mute', '0') === '1'; },
-    setMute(m) { set('mg-mute', m ? '1' : '0'); }
+    setMute(m) { set('mg-mute', m ? '1' : '0'); },
+    getRate() {
+      const r = parseFloat(get('mg-rate', '0.85'));
+      return (r >= 0.5 && r <= 1.4) ? r : 0.85;
+    },
+    setRate(r) { set('mg-rate', String(r)); },
+    pref(k) { return get(k, ''); },
+    setPref(k, v) { set(k, v); }
   };
 })();
 
@@ -214,14 +221,54 @@ const speech = (() => {
   let hiVoice = null;
   let enVoice = null;
   let warned = false;
+  let primed = false;
+
+  function allVoices() {
+    try { return window.speechSynthesis.getVoices() || []; } catch (e) { return []; }
+  }
+
+  // Higher score = better for an Indian child's ear. For English text an
+  // Indian-English voice wins; a Hindi voice (Indian-accent English) beats
+  // a US/UK one; name hints pick the natural-sounding engines over basic ones.
+  function score(v, kind) {
+    const lang = String(v.lang || '').toLowerCase().replace('_', '-');
+    let s = -1;
+    if (kind === 'hi') {
+      if (lang.indexOf('hi') === 0) s = 10;
+    } else {
+      if (lang.indexOf('en-in') === 0) s = 30;
+      else if (lang.indexOf('hi') === 0) s = 20;
+      else if (lang.indexOf('en-gb') === 0) s = 12;
+      else if (lang.indexOf('en-us') === 0) s = 8;
+      else if (lang.indexOf('en') === 0) s = 4;
+    }
+    if (s < 0) return s;
+    const n = String(v.name || '');
+    if (/natural|neural/i.test(n)) s += 6;
+    if (/online/i.test(n)) s += 5;
+    if (/google/i.test(n)) s += 4;
+    if (/microsoft/i.test(n)) s += 3;
+    if (v.localService === false) s += 2;
+    return s;
+  }
+
+  function list(kind) {
+    return allVoices()
+      .map((v) => ({ v, s: score(v, kind) }))
+      .filter((x) => x.s >= 0)
+      .sort((a, b) => b.s - a.s)
+      .map((x) => x.v);
+  }
 
   function pickVoices() {
     try {
-      const vs = window.speechSynthesis.getVoices() || [];
-      hiVoice = vs.find((v) => /^hi/i.test(v.lang)) || null;
-      enVoice = vs.find((v) => /^en[-_]IN/i.test(v.lang)) ||
-        vs.find((v) => /^en[-_]US/i.test(v.lang)) ||
-        vs.find((v) => /^en/i.test(v.lang)) || null;
+      const vs = allVoices();
+      const pref = (kind) => {
+        const uri = store.pref('mg-voice-' + kind);
+        return uri ? (vs.find((v) => v.voiceURI === uri) || null) : null;
+      };
+      hiVoice = pref('hi') || list('hi')[0] || null;
+      enVoice = pref('en') || list('en')[0] || null;
     } catch (e) { /* ignore */ }
   }
 
@@ -233,6 +280,16 @@ const speech = (() => {
     } catch (e) { /* ignore */ }
   }
 
+  function utter(text, lang, voice, rate, pitch) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN'; // set lang AND voice (Android needs both)
+    if (voice) u.voice = voice;
+    u.rate = rate;
+    u.pitch = pitch;
+    u.volume = 1;
+    return u;
+  }
+
   // lang: 'en' | 'hi'. Never throws; silent no-op without support (or muted).
   function speak(text, lang, opts) {
     if (!ok || !text || store.getMute()) return;
@@ -241,15 +298,34 @@ const speech = (() => {
     // Android quirk: speak() immediately after cancel() gets swallowed.
     setTimeout(() => {
       try {
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = lang === 'hi' ? 'hi-IN' : 'en-IN'; // set lang AND voice (Android needs both)
-        const v = lang === 'hi' ? hiVoice : enVoice;
-        if (v) u.voice = v;
-        u.rate = o.rate || 0.85;  // slow & clear for little ears
-        u.pitch = o.pitch || 1.1; // slightly playful
-        window.speechSynthesis.speak(u);
+        const base = o.rate || store.getRate();
+        const rate = lang === 'hi' ? Math.max(0.6, base - 0.05) : base;
+        window.speechSynthesis.speak(utter(text, lang, lang === 'hi' ? hiVoice : enVoice, rate, o.pitch || 1.1));
       } catch (e) { /* ignore */ }
     }, 30);
+  }
+
+  // Settings-screen preview: plays even while muted (the parent asked for it).
+  function testVoice(kind, text) {
+    if (!ok) return;
+    try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+    setTimeout(() => {
+      try {
+        window.speechSynthesis.speak(utter(text, kind, kind === 'hi' ? hiVoice : enVoice, store.getRate(), 1.1));
+      } catch (e) { /* ignore */ }
+    }, 30);
+  }
+
+  // Some Android engines swallow the very first word after boot; a silent
+  // utterance on the first tap warms the engine up.
+  function prime() {
+    if (primed || !ok) return;
+    primed = true;
+    try {
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* ignore */ }
   }
 
   function stop() {
@@ -257,10 +333,25 @@ const speech = (() => {
     try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
   }
 
+  function setPreferred(kind, voiceURI) {
+    store.setPref('mg-voice-' + kind, voiceURI);
+    pickVoices();
+  }
+
+  function current() {
+    const info = (v) => (v ? { name: v.name, lang: v.lang, voiceURI: v.voiceURI } : null);
+    return { en: info(enVoice), hi: info(hiVoice) };
+  }
+
   return {
     init,
     speak,
     stop,
+    prime,
+    list,
+    current,
+    setPreferred,
+    testVoice,
     hasHindi() { return !!hiVoice; },
     supported() { return ok; },
     warnNoHindiOnce() {
@@ -1134,8 +1225,9 @@ function boot() {
     quiz.start({ make: (i) => animalsGame.make(i), backTo: 'screen-animals' });
   });
 
-  // First touch unlocks/resumes the AudioContext (mobile autoplay policy).
-  document.addEventListener('pointerdown', () => sfx.ensure(), { passive: true });
+  // First touch unlocks/resumes the AudioContext (mobile autoplay policy)
+  // and warms up the speech engine so the first word isn't swallowed.
+  document.addEventListener('pointerdown', () => { sfx.ensure(); speech.prime(); }, { passive: true });
 
   applyLang();
 }
