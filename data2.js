@@ -257,7 +257,7 @@ const GAME_TITLES2 = {
   phonics: { en: 'Phonics', hi: 'फोनिक्स', hiSay: 'Phonics' },
   capsmall: { en: 'Big & Small Aa', hi: 'बड़ा-छोटा Aa', hiSay: 'Bada chhota A' },
   math: { en: 'Jod-Ghatao', hi: 'जोड़-घटाव', hiSay: 'Jod ghatav' },
-  board100: { en: 'Ginti 1-100', hi: 'गिनती 1-100', hiSay: 'Ginti ek se sau' },
+  board100: { en: 'Counting 1-100', hi: 'गिनती 1-100', hiSay: 'Ginti ek se sau' },
   clock: { en: 'Clock', hi: 'घड़ी', hiSay: 'Ghadi' },
   tower: { en: 'Tower', hi: 'टावर', hiSay: 'Tower' },
   fruits: { en: 'Fruits & Veggies', hi: 'फल-सब्ज़ी', hiSay: 'Phal sabzi' },

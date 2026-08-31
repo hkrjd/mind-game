@@ -3,20 +3,21 @@
 A learning game for little kids (around age 5) that teaches through play — in **Hindi and English together**.
 छोटे बच्चों (लगभग 5 साल) के लिए एक गेम जो खेल-खेल में सिखाता है — **हिंदी और English दोनों में**।
 
-No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **38 games** in one app.
+No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **48 games** in one app.
 
 ## 🎮 The games / गेम्स
 
 ### 📚 ABC & Words / ABC और शब्द
 | Game | What the child learns |
 |---|---|
-| 🔤 **ABC & Ginti** | Letters A–Z ("A for Apple / A से सेब"), counting 1–10, **and the Devanagari varnamala (क से कमल…)** — with find-it quizzes |
+| 🔤 **ABC & Counting** | Letters A–Z ("A for Apple / A से सेब"), counting 1–10, **and the Devanagari varnamala (क से कमल…)** — with find-it quizzes |
 | ✏️ **Learn Writing / लिखना सीखो** | Trace English letters, numbers, **Hindi letters (क, ख, ग…)** and shapes by painting over them with a finger |
 | 🔡 **Word Banao / शब्द बनाओ** | Spell CAT, DOG, SUN… by tapping letter tiles in order |
 | 🗣️ **Phonics** | "Which one starts with B?" — first-letter sounds |
 | 🔠 **Big & Small Aa / बड़ा-छोटा** | Match capital letters with small letters (A ↔ a) — a colored line connects each pair |
 | ↔️ **Ulta-Pulta / उल्टा-पुल्टा** | Opposites: big-small 🐘🐜, hot-cold 🔥❄️, day-night ☀️🌙… |
 | 🙋 **Suno aur Karo / सुनो और करो** | Listen — "अपनी नाक छुओ!" — and tap the right body part |
+| ✋ **Left-Right / बायाँ-दायाँ** | "Tap the **left** hand!" — left vs right with hands, animals and fruits |
 | 📖 **Kahaniyan / कहानियाँ** | 4 tiny bilingual picture stories, read aloud line by line, with a question at the end |
 
 ### 🔢 Numbers & Math / गिनती और मैथ
@@ -24,11 +25,13 @@ No installs, no internet needed after loading — just open `index.html` in any 
 |---|---|
 | ➕ **Jod-Ghatao / जोड़-घटाव** | Picture addition and subtraction up to 10 (🍎🍎 + 🍎 = ?) |
 | ✖️ **Tables / पहाड़े** | Times tables 1–10 recited school-style in English ("Two ones are two…") with a per-table quiz |
-| 💯 **Ginti 1–100** | Tap any number on the 100-board and hear it (एक… सौ), plus find-the-number rounds |
+| 💯 **Counting 1–100** | Tap any number on the 100-board and hear it (एक… सौ), plus find-the-number rounds |
 | 🕐 **Clock / घड़ी** | Read full hours on an analog clock ("3 बजे हैं / It's 3 o'clock") |
 | 🏗️ **Tower** | Stack falling blocks — every floor is counted aloud |
 | 💰 **Sikke ₹ / सिक्के** | Learn Indian coins (₹1, ₹2, ₹5, ₹10) and add small amounts |
 | ⚖️ **Zyada ya Kam? / ज़्यादा या कम?** | Count two groups — which has more, which has less? |
+| 🛒 **Dukaan / दुकान** | Play shop: collect the shopping list into the basket, then pay the exact amount with coins |
+| 📅 **Hafte ke Din / हफ़्ते के दिन** | The 7 days of the week — listen, chant along, then put the shuffled days in order |
 
 ### 🧠 Brain Games / दिमाग के खेल
 | Game | What the child learns |
@@ -37,6 +40,9 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 👀 **What Vanished? / क्या गायब हुआ?** | Look at 4 things, one disappears — remember which! |
 | 🤔 **Odd One Out / अलग कौन?** | Three belong together — tap the different one |
 | 🔍 **I Spy / जासूस** | A busy scene of 24 things — find the one that's called out |
+| 🚂 **Rail Gaadi / रेल गाड़ी** | Sort things into the right train wagons — fruits vs animals, red vs blue — then chhuk chhuk! |
+| 🌅 **Pehle-Phir / पहले-फिर** | What happens first? Put 4-step stories in order: waking up, bedtime, cooking, a growing plant |
+| 📏 **Chhota-se-Bada / छोटे से बड़ा** | Arrange 4 sizes of the same thing from smallest to biggest |
 
 ### 🌍 Know the World / दुनिया जानो
 | Game | What the child learns |
@@ -50,6 +56,10 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🚦 **Traffic** | Red light = stop, green light = go! Drive the car safely |
 | 🇮🇳 **Mera Bharat / मेरा भारत** | Tiranga, mor, baagh, kamal, diya, namaste — India ki pehchaan |
 | 🧑‍🚒 **Madadgaar / मददगार** | Community helpers — "who helps when you are sick?" |
+| 🍽️ **Khana Khilao / खाना खिलाओ** | The monkey asks for a banana — feed each animal its favourite food |
+| 😊 **Bhavna / भावना** | Happy, sad, scared, sleepy… name feelings and match them to little situations |
+| 🌦️ **Mausam / मौसम** | Sun, rain, snow, wind, clouds — and what to wear or drink in each |
+| 🦺 **Suraksha / सुरक्षा** | Simple safety: traffic light, hot pan, washing hands, helmet — with the reason spoken aloud |
 
 ### 🎨 Play & Fun / खेल और मस्ती
 | Game | What the child learns |
@@ -101,13 +111,13 @@ A minute later the game is live at `https://<your-username>.github.io/mind-game/
 ## 🛠️ Tech notes
 
 - Zero-build vanilla HTML/CSS/JS — no frameworks, no assets: emoji for pictures, SVG/canvas for shapes and puzzles, Web Speech API for voices, Web Audio API for jingles.
-- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
+- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
 - Works fully offline: from `file://` directly, and as an installed PWA via the service worker. Degrades gracefully when speech/audio/localStorage are unavailable.
 - **When deploying an update, bump `VERSION` in `sw.js`** so installed apps fetch the new files.
 - Smoke tests (drive every game headlessly and screenshot each screen):
   ```
   node tests/verify.js      # core: first 4 games, quiz engine, Hindi toggle, persistence
-  node tests/verify2.js     # the 20 newer games + varnamala, mute, stickers, back button
+  node tests/verify2.js     # the 44 newer games + varnamala, mute, stickers, back button
   node tests/verify-pwa.js  # manifest, icons, service worker, offline boot (needs http-server)
   ```
   Requires Node with [Playwright](https://playwright.dev) available (`npm i -g playwright` + browsers).

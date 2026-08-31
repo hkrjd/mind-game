@@ -42,7 +42,7 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 38, 'home shows all 38 game cards');
+  ok(await page.locator('#home-grid .game-card').count() === 48, 'home shows all 48 game cards');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -485,6 +485,127 @@ function ok(cond, msg) {
   await shot('54-story.png');
   await page.waitForSelector('#stories-list:not([hidden])', { timeout: 6000 }); // story auto-closes
   await back();
+  await home();
+
+  console.log('# bazaar pack');
+  await openGame('shop');
+  await page.waitForSelector('#shop-shelf .shop-tile');
+  const needRaw = await page.getAttribute('#shop-area', 'data-need');
+  for (const part of needRaw.split(',')) {
+    const [item, cnt] = part.split(':');
+    for (let c = 0; c < Number(cnt); c++) {
+      await page.click('#shop-shelf .shop-tile[data-k="' + item + '"]');
+    }
+  }
+  await page.waitForFunction(() => document.getElementById('shop-area').dataset.phase === 'pay');
+  ok(true, 'shopping list gathered (' + needRaw + ') — now paying');
+  const total = Number(await page.getAttribute('#shop-area', 'data-total'));
+  let left = total;
+  for (const v of [10, 5, 2, 1]) {
+    while (left >= v) {
+      await page.click('#shop-coins .shop-coin[data-v="' + v + '"]');
+      left -= v;
+    }
+  }
+  await page.waitForFunction(() => document.getElementById('shop-area').dataset.round === '2');
+  ok(true, 'paid exactly ₹' + total + ' — round 2 starts');
+  await shot('55-shop.png');
+  await back();
+  await home();
+
+  await openGame('feed');
+  const foodAns = await page.getAttribute('#feed-scene', 'data-food');
+  await page.click('#feed-choices .feed-food[data-k="' + foodAns + '"]');
+  ok(await page.getAttribute('#feed-scene', 'data-fed') === '1', 'fed the right food (' + foodAns + ')');
+  await shot('56-feed.png');
+  await back();
+  await home();
+
+  await openGame('train');
+  await page.waitForSelector('#train-tray .train-item');
+  const grp = await page.getAttribute('#train-tray .train-item:nth-child(1)', 'data-group');
+  await page.click('#train-tray .train-item:nth-child(1)');
+  await page.click('#train-track .wagon[data-accept="' + grp + '"]');
+  ok(await page.getAttribute('#train-track', 'data-sorted') === '1', 'sorted one item into the ' + grp + ' wagon');
+  await shot('57-train.png');
+  await back();
+  await home();
+
+  console.log('# samajh pack');
+  await openGame('feelings');
+  ok(await page.locator('#feelings-grid .tile').count() === 6, '6 feeling faces');
+  await page.click('#feelings-grid .tile:nth-child(1)');
+  await page.click('#feelings-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'feelings quiz advances');
+  await back();
+  await page.waitForSelector('#screen-feelings.active');
+  await back();
+  await home();
+
+  await openGame('weather');
+  ok(await page.locator('#weather-grid .tile').count() === 5, '5 weathers');
+  await page.click('#weather-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'weather quiz advances');
+  await back();
+  await page.waitForSelector('#screen-weather.active');
+  await back();
+  await home();
+
+  await openGame('leftright');
+  const lrAns = await page.getAttribute('#lr-area', 'data-answer');
+  await page.click('#lr-area .lr-zone[data-side="' + lrAns + '"]');
+  ok(await page.getAttribute('#lr-area', 'data-score') === '1', 'tapped the correct side (' + lrAns + ')');
+  await shot('58-leftright.png');
+  await back();
+  await home();
+
+  await openGame('safety');
+  await page.click('#safety-start');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'safety quiz advances');
+  await back();
+  await page.waitForSelector('#screen-safety.active');
+  await back();
+  await home();
+
+  console.log('# kram pack');
+  await openGame('order');
+  await page.waitForSelector('#order-cards .cyc-card');
+  for (let s = 0; s < 4; s++) {
+    await page.click('#order-cards .cyc-card[data-stage="' + s + '"]:not(.used)');
+  }
+  ok(await page.getAttribute('#order-area', 'data-filled') === '4', 'morning routine put in order');
+  await shot('59-order.png');
+  await back();
+  await home();
+
+  await openGame('sizes');
+  await page.waitForSelector('#sizes-cards .cyc-card');
+  for (let r = 0; r < 4; r++) {
+    await page.click('#sizes-cards .cyc-card[data-rank="' + r + '"]:not(.used)');
+  }
+  ok(await page.getAttribute('#sizes-area', 'data-filled') === '4', 'sizes arranged small to big');
+  await shot('60-sizes.png');
+  await back();
+  await home();
+
+  await openGame('week');
+  ok(await page.locator('#week-learn .week-chip').count() === 7, '7 days of the week');
+  await page.click('#week-learn .week-chip:nth-child(3)');
+  await page.click('#week-order');
+  await page.waitForSelector('#week-cards .cyc-card');
+  for (let d = 0; d < 7; d++) {
+    await page.click('#week-cards .cyc-card[data-d="' + d + '"]:not(.used)');
+  }
+  ok(await page.getAttribute('#week-game', 'data-filled') === '7', 'week ordered Monday to Sunday');
+  await shot('61-week.png');
+  await page.waitForSelector('#celebrate.show'); // full week = instant celebration
+  await page.click('#btn-cele-home');
   await home();
 
   console.log('# drawing');
