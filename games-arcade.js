@@ -883,3 +883,416 @@ const drawingGame = (() => {
 })();
 
 GAMES.drawing = { emoji: '🖍️', color: 'var(--sunny)', screen: 'screen-drawing', enter() { drawingGame.enter(); }, onLang() { drawingGame.onLang(); } };
+
+/* ================= Murgi Farm (Hen Farm) ================= */
+
+Object.assign(T, {
+  farmCatchHint: { en: 'Move the basket and catch the eggs!', hi: 'टोकरी सरकाओ और अंडे पकड़ो!' },
+  farmHatchHint: { en: 'Tap an egg for a surprise!', hi: 'अंडा दबाओ, सरप्राइज़ निकलेगा!' },
+  farmCycleHint: { en: 'Put the story in order!', hi: 'कहानी को क्रम में लगाओ!' },
+  farmFoxHint: { en: 'Tap the fox — but not the chick!', hi: 'लोमड़ी को दबाओ — चूज़े को नहीं!' },
+  farmTabCatch: { en: '🥚 Catch', hi: '🥚 पकड़ो' },
+  farmTabHatch: { en: '🐣 Open', hi: '🐣 फोड़ो' },
+  farmTabCycle: { en: '🔄 Story', hi: '🔄 कहानी' },
+  farmTabFox: { en: '🦊 Fox', hi: '🦊 लोमड़ी' },
+  foxChick: { en: "Oh! That's the little chick!", hi: 'अरे! यह तो चूज़ा है!', hiSay: 'Are! Yeh to chooza hai!' },
+  goldEgg: { en: 'Golden egg! Two stars!', hi: 'सुनहरा अंडा! दो स्टार!', hiSay: 'Sunehra anda! Do star!' },
+  chickWord: { en: 'Chick! Cheep cheep!', hi: 'चूज़ा! चीं चीं!', hiSay: 'Chooza! Cheen cheen!' }
+});
+GAME_TITLES.farm = { en: 'Hen Farm', hi: 'मुर्गी फार्म', hiSay: 'Murgi farm' };
+
+const FARM_CYCLES = [
+  {
+    name: { en: 'Egg to Hen', hi: 'अंडे से मुर्गी' },
+    stages: [
+      { emoji: '🥚', en: 'Egg', hi: 'अंडा', hiSay: 'Anda' },
+      { emoji: '🐣', en: 'Hatching', hi: 'अंडा फूटा', hiSay: 'Anda phoota' },
+      { emoji: '🐤', en: 'Chick', hi: 'चूज़ा', hiSay: 'Chooza' },
+      { emoji: '🐔', en: 'Hen', hi: 'मुर्गी', hiSay: 'Murgi' }
+    ]
+  },
+  {
+    name: { en: 'Seed to Tree', hi: 'बीज से पेड़' },
+    stages: [
+      { emoji: '🌰', en: 'Seed', hi: 'बीज', hiSay: 'Beej' },
+      { emoji: '🌱', en: 'Sprout', hi: 'अंकुर', hiSay: 'Ankur' },
+      { emoji: '🌿', en: 'Plant', hi: 'पौधा', hiSay: 'Paudha' },
+      { emoji: '🌳', en: 'Tree', hi: 'पेड़', hiSay: 'Ped' }
+    ]
+  },
+  {
+    name: { en: 'Baby to Grandpa', hi: 'बच्चे से दादा' },
+    stages: [
+      { emoji: '👶', en: 'Baby', hi: 'बच्चा', hiSay: 'Bachcha' },
+      { emoji: '🧒', en: 'Kid', hi: 'लड़का', hiSay: 'Ladka' },
+      { emoji: '🧑', en: 'Grown-up', hi: 'आदमी', hiSay: 'Aadmi' },
+      { emoji: '🧓', en: 'Grandpa', hi: 'दादा', hiSay: 'Dada' }
+    ]
+  }
+];
+
+const farmGame = (() => {
+  buildScreen('farm',
+    '<div class="tabs farm-tabs" id="farm-tabs">' +
+    '<button class="tab active" data-mode="catch" data-t="farmTabCatch"></button>' +
+    '<button class="tab" data-mode="hatch" data-t="farmTabHatch"></button>' +
+    '<button class="tab" data-mode="cycle" data-t="farmTabCycle"></button>' +
+    '<button class="tab" data-mode="fox" data-t="farmTabFox"></button></div>' +
+    '<p class="hint" id="farm-hint"></p>' +
+    '<div id="farm-area" data-mode="catch"></div>');
+
+  const HINTS = { catch: 'farmCatchHint', hatch: 'farmHatchHint', cycle: 'farmCycleHint', fox: 'farmFoxHint' };
+  const state = { mode: 'catch', raf: 0, timeouts: [], intervals: [], running: false };
+
+  function tmo(fn, ms) { const id = setTimeout(fn, ms); state.timeouts.push(id); return id; }
+  function itv(fn, ms) { const id = setInterval(fn, ms); state.intervals.push(id); return id; }
+
+  function stopAll() {
+    state.running = false;
+    cancelAnimationFrame(state.raf);
+    state.timeouts.forEach(clearTimeout);
+    state.intervals.forEach(clearInterval);
+    state.timeouts = [];
+    state.intervals = [];
+  }
+
+  function hint() {
+    $('farm-hint').textContent = T[HINTS[state.mode]][store.getLang()];
+  }
+
+  /* ---- Mode 1: Anda Pakdo (egg catch) ---- */
+  const catchMode = { henX: 0, henDir: 1, basketX: 0, eggs: [], caught: 0, dropped: 0, prevTs: 0 };
+
+  function catchEnter() {
+    const area = $('farm-area');
+    area.innerHTML = '<div class="farm-scene" id="fc-scene">' +
+      '<span id="fc-hen">🐔</span><div id="fc-eggs"></div><span id="fc-basket">🧺</span></div>';
+    catchMode.eggs = [];
+    catchMode.caught = 0;
+    catchMode.dropped = 0;
+    catchMode.henX = 40;
+    catchMode.henDir = 1;
+    catchMode.prevTs = 0;
+    area.dataset.caught = '0';
+    const scene = $('fc-scene');
+    catchMode.basketX = scene.clientWidth / 2;
+    positionBasket();
+    scene.addEventListener('pointermove', (e) => {
+      const r = scene.getBoundingClientRect();
+      catchMode.basketX = Math.max(30, Math.min(r.width - 30, e.clientX - r.left));
+      positionBasket();
+    });
+    scene.addEventListener('pointerdown', (e) => {
+      const r = scene.getBoundingClientRect();
+      catchMode.basketX = Math.max(30, Math.min(r.width - 30, e.clientX - r.left));
+      positionBasket();
+    });
+    state.running = true;
+    scheduleDrop();
+    state.raf = requestAnimationFrame(catchLoop);
+  }
+
+  function positionBasket() {
+    const b = $('fc-basket');
+    if (b) b.style.left = (catchMode.basketX - 26) + 'px';
+  }
+
+  function scheduleDrop() {
+    if (!state.running || state.mode !== 'catch') return;
+    tmo(() => {
+      if (!state.running || state.mode !== 'catch') return;
+      const box = $('fc-eggs');
+      if (box) {
+        catchMode.dropped++;
+        const el = document.createElement('span');
+        const gold = catchMode.dropped % 4 === 0;
+        el.className = 'fc-egg' + (gold ? ' gold' : '');
+        el.textContent = '🥚';
+        el.style.left = (catchMode.henX - 12) + 'px';
+        box.appendChild(el);
+        catchMode.eggs.push({ el, x: catchMode.henX, y: 54, vy: 120 + Math.random() * 50 + catchMode.caught * 6, gold });
+      }
+      scheduleDrop();
+    }, 1000 + Math.random() * 600);
+  }
+
+  function catchLoop(ts) {
+    if (!state.running || state.mode !== 'catch') return;
+    const dt = catchMode.prevTs ? Math.min((ts - catchMode.prevTs) / 1000, 0.06) : 0.016;
+    catchMode.prevTs = ts;
+    const scene = $('fc-scene');
+    if (!scene) return;
+    const w = scene.clientWidth;
+    const h = scene.clientHeight;
+    // hen waddles left-right
+    catchMode.henX += catchMode.henDir * 90 * dt;
+    if (catchMode.henX < 34) { catchMode.henX = 34; catchMode.henDir = 1; }
+    if (catchMode.henX > w - 34) { catchMode.henX = w - 34; catchMode.henDir = -1; }
+    $('fc-hen').style.left = (catchMode.henX - 22) + 'px';
+    // eggs fall
+    catchMode.eggs.slice().forEach((egg) => {
+      egg.y += egg.vy * dt;
+      egg.el.style.top = egg.y + 'px';
+      if (egg.y >= h - 76 && Math.abs(egg.x - catchMode.basketX) < 48) {
+        // caught!
+        catchMode.eggs = catchMode.eggs.filter((x) => x !== egg);
+        egg.el.remove();
+        catchMode.caught++;
+        $('farm-area').dataset.caught = String(catchMode.caught);
+        sfx.correct();
+        store.addStars(egg.gold ? 2 : 1);
+        starFly($('fc-basket'));
+        if (egg.gold) {
+          sayPhrase(T.goldEgg);
+          confetti(10);
+        } else {
+          const n = catchMode.caught;
+          sayPhrase(phrase(n + '!', HINDI_100[n - 1] + '!', HINDI_100_SAY[n - 1] + '!'));
+        }
+        if (catchMode.caught >= 10) {
+          stopAll();
+          tmo(() => celebrate({ again: () => { hideCelebrate(); setMode('catch'); } }), 600);
+        }
+      } else if (egg.y > h - 30) {
+        // splat — no penalty, just a fried egg for a moment
+        catchMode.eggs = catchMode.eggs.filter((x) => x !== egg);
+        egg.el.textContent = '🍳';
+        egg.el.classList.add('fc-splat');
+        const el = egg.el;
+        tmo(() => el.remove(), 700);
+      }
+    });
+    state.raf = requestAnimationFrame(catchLoop);
+  }
+
+  /* ---- Mode 2: Surprise Ande (hatch) ---- */
+  const hatchMode = { opened: 0, surprises: [] };
+
+  function hatchSurprises() {
+    const list = [];
+    list.push({ type: 'chick' });
+    sample(LETTERS, 3).forEach((l) => list.push({ type: 'letter', item: l }));
+    sample(NUMBERS.slice(0, 9), 2).forEach((n) => list.push({ type: 'number', item: n }));
+    sample(ANIMALS, 2).forEach((a) => list.push({ type: 'animal', item: a }));
+    return shuffle(list);
+  }
+
+  function surpriseEmoji(s) {
+    if (s.type === 'chick') return '🐣';
+    if (s.type === 'letter') return s.item.emoji;
+    if (s.type === 'number') return String(s.item.n);
+    return s.item.emoji;
+  }
+
+  function speakSurprise(s) {
+    if (s.type === 'chick') sayPhrase(T.chickWord);
+    else if (s.type === 'letter') {
+      const l = s.item;
+      sayPhrase(phrase(l.ch + '! ' + l.ch + ' for ' + l.en + '!', l.ch + '! ' + l.ch + ' से ' + l.hi + '!', l.ch + '! ' + l.ch + ' se ' + l.hiSay + '!'));
+    } else if (s.type === 'number') sayPhrase(countPhrase(s.item.n));
+    else {
+      const a = s.item;
+      sayPhrase(phrase(a.en + '! ' + a.soundEn, a.hi + '! ' + a.soundHi, a.hiSay + '! ' + a.soundHiSay));
+    }
+  }
+
+  function hatchEnter() {
+    hatchMode.opened = 0;
+    hatchMode.surprises = hatchSurprises();
+    const area = $('farm-area');
+    area.dataset.opened = '0';
+    area.innerHTML = '<div id="fh-grid"></div>';
+    const grid = $('fh-grid');
+    hatchMode.surprises.forEach((s, i) => {
+      const b = document.createElement('button');
+      b.className = 'fh-egg';
+      b.textContent = '🥚';
+      b.dataset.i = String(i);
+      b.addEventListener('click', () => {
+        if (b.classList.contains('hatched') || b.classList.contains('cracking')) return;
+        sfx.flip();
+        b.classList.add('cracking');
+        tmo(() => {
+          b.classList.remove('cracking');
+          b.classList.add('hatched', 'pop');
+          b.textContent = surpriseEmoji(s);
+          sfx.correct();
+          store.addStars(1);
+          starFly(b);
+          speakSurprise(s);
+          hatchMode.opened++;
+          $('farm-area').dataset.opened = String(hatchMode.opened);
+          if (hatchMode.opened >= hatchMode.surprises.length) {
+            tmo(() => celebrate({ again: () => { hideCelebrate(); setMode('hatch'); } }), 1200);
+          }
+        }, 450);
+      });
+      grid.appendChild(b);
+    });
+  }
+
+  /* ---- Mode 3: Anda se Murgi (story order) ---- */
+  const cycleMode = { round: 0, filled: 0 };
+
+  function cycleEnter() {
+    cycleMode.round = 0;
+    cycleRound();
+  }
+
+  function cycleRound() {
+    const cyc = FARM_CYCLES[cycleMode.round];
+    cycleMode.filled = 0;
+    const lang = store.getLang();
+    const area = $('farm-area');
+    area.dataset.filled = '0';
+    area.dataset.cycleRound = String(cycleMode.round + 1);
+    let slots = '';
+    for (let i = 0; i < 4; i++) slots += '<div class="cyc-slot"><span class="cyc-num">' + (i + 1) + '</span><span class="cyc-fill"></span></div>';
+    area.innerHTML = '<h3 class="cyc-title">' + cyc.name[lang] + '</h3>' +
+      '<div class="cyc-row" id="fy-slots">' + slots + '</div>' +
+      '<div class="cyc-row" id="fy-cards"></div>';
+    let order = shuffle([0, 1, 2, 3]);
+    if (order.every((v, i) => v === i)) order = [3, 2, 1, 0];
+    const cards = $('fy-cards');
+    order.forEach((stageIdx) => {
+      const st = cyc.stages[stageIdx];
+      const b = document.createElement('button');
+      b.className = 'cyc-card';
+      b.dataset.stage = String(stageIdx);
+      b.innerHTML = '<span class="t-big">' + st.emoji + '</span><span class="t-word">' + st[lang] + '</span>';
+      b.addEventListener('click', () => {
+        if (b.classList.contains('used')) return;
+        if (Number(b.dataset.stage) === cycleMode.filled) {
+          b.classList.add('used');
+          const slot = $('fy-slots').children[cycleMode.filled];
+          slot.querySelector('.cyc-fill').textContent = st.emoji;
+          slot.classList.add('filled', 'pop');
+          sfx.pop();
+          sayPhrase(wordPhrase(st));
+          cycleMode.filled++;
+          $('farm-area').dataset.filled = String(cycleMode.filled);
+          if (cycleMode.filled >= 4) {
+            sfx.correct();
+            store.addStars(2);
+            starFly(slot);
+            confetti(14);
+            const names = cyc.stages;
+            sayPhrase(phrase(
+              'First ' + names[0].en + ', then ' + names[1].en + ', then ' + names[2].en + ', then ' + names[3].en + '!',
+              'पहले ' + names[0].hi + ', फिर ' + names[1].hi + ', फिर ' + names[2].hi + ', फिर ' + names[3].hi + '!',
+              'Pehle ' + names[0].hiSay + ', phir ' + names[1].hiSay + ', phir ' + names[2].hiSay + ', phir ' + names[3].hiSay + '!'
+            ));
+            cycleMode.round++;
+            tmo(() => {
+              if (cycleMode.round >= FARM_CYCLES.length) {
+                celebrate({ again: () => { hideCelebrate(); setMode('cycle'); } });
+              } else {
+                cycleRound();
+              }
+            }, 2600);
+          }
+        } else {
+          sfx.wrong();
+          b.classList.add('wiggle');
+          b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
+          sayPhrase(rand(ENCOURAGE));
+        }
+      });
+      cards.appendChild(b);
+    });
+  }
+
+  /* ---- Mode 4: Murgi Bachao (fox bonk) ---- */
+  const foxMode = { score: 0, lastWrong: 0 };
+
+  function foxEnter() {
+    foxMode.score = 0;
+    const area = $('farm-area');
+    area.dataset.bonked = '0';
+    let bushes = '';
+    for (let i = 0; i < 6; i++) {
+      bushes += '<button class="bush" data-i="' + i + '"><span class="bush-top">🌿</span><span class="pop-actor" hidden></span></button>';
+    }
+    area.innerHTML = '<div class="fox-status">🐔 <span id="fx-count">0</span> / 10</div>' +
+      '<div id="fx-grid">' + bushes + '</div>';
+    document.querySelectorAll('#fx-grid .bush').forEach((b) => {
+      b.addEventListener('click', () => {
+        const actor = b.querySelector('.pop-actor');
+        if (actor.hidden) return;
+        if (actor.textContent === '🦊') {
+          actor.textContent = '💫';
+          sfx.correct();
+          store.addStars(1);
+          starFly(b);
+          foxMode.score++;
+          $('fx-count').textContent = String(foxMode.score);
+          $('farm-area').dataset.bonked = String(foxMode.score);
+          tmo(() => { actor.hidden = true; }, 350);
+          if (foxMode.score >= 10) {
+            stopAll();
+            tmo(() => celebrate({ again: () => { hideCelebrate(); setMode('fox'); } }), 600);
+          }
+        } else {
+          sfx.wrong();
+          const now = Date.now();
+          if (now - foxMode.lastWrong > 2000) {
+            foxMode.lastWrong = now;
+            sayPhrase(T.foxChick);
+          }
+        }
+      });
+    });
+    state.running = true;
+    foxSpawn();
+  }
+
+  function foxSpawn() {
+    if (!state.running || state.mode !== 'fox') return;
+    tmo(() => {
+      if (!state.running || state.mode !== 'fox') return;
+      const bushes = Array.from(document.querySelectorAll('#fx-grid .bush .pop-actor')).filter((a) => a.hidden);
+      if (bushes.length) {
+        const actor = rand(bushes);
+        actor.textContent = Math.random() < 0.75 ? '🦊' : '🐤';
+        actor.hidden = false;
+        actor.classList.remove('pop');
+        void actor.offsetWidth;
+        actor.classList.add('pop');
+        tmo(() => { actor.hidden = true; }, 950 + Math.random() * 450 - foxMode.score * 20);
+      }
+      foxSpawn();
+    }, Math.max(500, 1100 - foxMode.score * 40 + Math.random() * 400));
+  }
+
+  /* ---- Mode plumbing ---- */
+  const MODES = { catch: catchEnter, hatch: hatchEnter, cycle: cycleEnter, fox: foxEnter };
+
+  function setMode(m) {
+    stopAll();
+    state.mode = m;
+    $('farm-area').dataset.mode = m;
+    document.querySelectorAll('#farm-tabs .tab').forEach((t) => {
+      t.classList.toggle('active', t.dataset.mode === m);
+    });
+    hint();
+    MODES[m]();
+  }
+
+  document.querySelectorAll('#farm-tabs .tab').forEach((t) => {
+    t.addEventListener('click', () => {
+      sfx.pop();
+      setMode(t.dataset.mode);
+    });
+  });
+
+  return {
+    enter() { setMode(state.mode); },
+    onLeave: stopAll,
+    onLang() { hint(); if (state.mode === 'cycle') { stopAll(); cycleRound(); } }
+  };
+})();
+
+GAMES.farm = {
+  emoji: '🐔', color: 'var(--tangerine)', screen: 'screen-farm',
+  enter() { farmGame.enter(); }, onLeave() { farmGame.onLeave(); }, onLang() { farmGame.onLang(); }
+};

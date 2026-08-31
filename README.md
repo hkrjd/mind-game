@@ -3,7 +3,7 @@
 A learning game for little kids (around age 5) that teaches through play — in **Hindi and English together**.
 छोटे बच्चों (लगभग 5 साल) के लिए एक गेम जो खेल-खेल में सिखाता है — **हिंदी और English दोनों में**।
 
-No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **26 games** in one app.
+No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **27 games** in one app.
 
 ## 🎮 The games / गेम्स
 
@@ -40,6 +40,7 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | Game | What the child learns |
 |---|---|
 | 🧠 **Memory Match** | Flip cards, find pairs — every match speaks its word |
+| 🐔 **Hen Farm / मुर्गी फार्म** | 4 mini-games: catch falling eggs (counted aloud), crack surprise eggs, order the egg→chick→hen story, and bonk the fox (but not the chick!) |
 | 🧩 **Puzzle** | Swap the 9 pieces to complete the picture |
 | 🌀 **Maze / भूलभुलैया** | Guide the bunny 🐰 to the carrot 🥕 through 5 mazes |
 | 🔍 **Shadow Match / परछाई मिलाओ** | Match each picture with its shadow |

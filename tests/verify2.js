@@ -42,7 +42,7 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 26, 'home shows all 26 game cards');
+  ok(await page.locator('#home-grid .game-card').count() === 27, 'home shows all 27 game cards');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -356,6 +356,40 @@ function ok(cond, msg) {
   await page.waitForFunction(() => document.getElementById('traffic-scene').dataset.cross === '1');
   ok(true, 'GO on green crosses the road');
   await shot('36-traffic.png');
+  await back();
+  await home();
+
+  console.log('# murgi farm');
+  await openGame('farm');
+  ok(await page.locator('#farm-tabs .tab').count() === 4, 'farm has 4 mode tabs');
+  await page.waitForSelector('#fc-hen');
+  await page.waitForFunction(() => document.getElementById('fc-eggs').children.length > 0, null, { timeout: 8000 });
+  ok(true, 'eggs start dropping from the hen');
+  await shot('44-farm-catch.png');
+  await page.click('#farm-tabs .tab[data-mode="hatch"]');
+  ok(await page.locator('.fh-egg').count() === 8, 'surprise mode shows 8 eggs');
+  await page.click('.fh-egg[data-i="0"]');
+  await page.waitForSelector('.fh-egg.hatched', { timeout: 4000 });
+  ok(await page.getAttribute('#farm-area', 'data-opened') === '1', 'egg opens with a surprise inside');
+  await shot('45-farm-hatch.png');
+  await page.click('#farm-tabs .tab[data-mode="cycle"]');
+  await page.waitForSelector('.cyc-card');
+  for (let s = 0; s < 4; s++) {
+    await page.click('.cyc-card[data-stage="' + s + '"]:not(.used)');
+  }
+  ok(await page.getAttribute('#farm-area', 'data-filled') === '4', 'life cycle ordered correctly (egg→chick→hen)');
+  await shot('46-farm-cycle.png');
+  await page.click('#farm-tabs .tab[data-mode="fox"]');
+  await page.waitForFunction(() => {
+    const a = Array.from(document.querySelectorAll('#fx-grid .pop-actor'));
+    return a.some((x) => !x.hidden && x.textContent === '🦊');
+  }, null, { timeout: 15000 });
+  await page.evaluate(() => {
+    const actor = Array.from(document.querySelectorAll('#fx-grid .pop-actor')).find((x) => !x.hidden && x.textContent === '🦊');
+    actor.closest('.bush').click();
+  });
+  ok(await page.getAttribute('#farm-area', 'data-bonked') === '1', 'fox bonked, hen saved');
+  await shot('47-farm-fox.png');
   await back();
   await home();
 
