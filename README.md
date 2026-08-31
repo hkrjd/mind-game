@@ -3,7 +3,7 @@
 A learning game for little kids (around age 5) that teaches through play — in **Hindi and English together**.
 छोटे बच्चों (लगभग 5 साल) के लिए एक गेम जो खेल-खेल में सिखाता है — **हिंदी और English दोनों में**।
 
-No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **24 games** in one app.
+No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **26 games** in one app.
 
 ## 🎮 The games / गेम्स
 
@@ -14,12 +14,13 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | ✏️ **Learn Writing / लिखना सीखो** | Trace English letters, numbers, **Hindi letters (क, ख, ग…)** and shapes by painting over them with a finger |
 | 🔡 **Word Banao / शब्द बनाओ** | Spell CAT, DOG, SUN… by tapping letter tiles in order |
 | 🗣️ **Phonics** | "Which one starts with B?" — first-letter sounds |
-| 🔠 **Big & Small Aa / बड़ा-छोटा** | Match capital letters with small letters (A ↔ a) |
+| 🔠 **Big & Small Aa / बड़ा-छोटा** | Match capital letters with small letters (A ↔ a) — a colored line connects each pair |
 
 ### 🔢 Numbers & Math / गिनती और मैथ
 | Game | What the child learns |
 |---|---|
 | ➕ **Jod-Ghatao / जोड़-घटाव** | Picture addition and subtraction up to 10 (🍎🍎 + 🍎 = ?) |
+| ✖️ **Tables / पहाड़े** | Times tables 1–10 recited school-style in English ("Two ones are two…") with a per-table quiz |
 | 💯 **Ginti 1–100** | Tap any number on the 100-board and hear it (एक… सौ), plus find-the-number rounds |
 | 🕐 **Clock / घड़ी** | Read full hours on an analog clock ("3 बजे हैं / It's 3 o'clock") |
 | 🏗️ **Tower** | Stack falling blocks — every floor is counted aloud |

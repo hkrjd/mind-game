@@ -970,3 +970,46 @@ button {
   .plant { font-size: 2rem; min-height: 44px; line-height: 44px; }
   #draw-frame { min-height: 220px; }
 }
+
+/* ---- Bada-Chhota connecting lines ---- */
+#cs-area { position: relative; }
+#cs-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ---- Tables (Pahade) ---- */
+#tables-picker {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 430px;
+}
+#tables-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 470px;
+}
+.trow {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .1);
+  padding: 10px 16px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  transition: background .2s, transform .1s;
+}
+.trow:active { transform: translateY(2px); }
+.trow.active { background: var(--sunny); }
+.tr-eq { font-size: 1.35rem; white-space: nowrap; }
+.tr-words { font-size: .95rem; opacity: .75; font-weight: 600; text-align: right; }
+.tables-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }

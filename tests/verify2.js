@@ -42,7 +42,7 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 25, 'home shows all 25 game cards');
+  ok(await page.locator('#home-grid .game-card').count() === 26, 'home shows all 26 game cards');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -147,6 +147,7 @@ function ok(cond, msg) {
   await page.click('#cs-caps .cs-tile:nth-child(1)');
   await page.click('#cs-smalls .cs-tile[data-l="' + capL + '"]');
   ok(await page.getAttribute('#cs-area', 'data-matched') === '1', 'capital ' + capL + ' matched with its small letter');
+  ok(await page.locator('#cs-lines line').count() === 1, 'a connecting line joins the matched pair');
   await shot('25-capsmall.png');
   await back();
   await home();
@@ -159,6 +160,26 @@ function ok(cond, msg) {
   await page.click('#shadow-shadows .shadow-tile[data-k="' + shK + '"]');
   ok(await page.getAttribute('#shadow-area', 'data-matched') === '1', 'shadow matched for ' + shK);
   await shot('26-shadow.png');
+  await back();
+  await home();
+
+  console.log('# tables (pahade)');
+  await openGame('tables');
+  ok(await page.locator('#tables-picker .hour-btn').count() === 10, 'tables 1-10 picker');
+  await page.click('#tables-picker .hour-btn[data-a="3"]');
+  ok(await page.getAttribute('#tables-rows', 'data-table') === '3', 'table of 3 selected');
+  ok(await page.locator('#tables-rows .trow').count() === 10, 'ten rows shown');
+  ok((await page.textContent('#tables-rows .trow:nth-child(4)')).includes('3 × 4 = 12'), 'row shows 3 × 4 = 12');
+  await page.click('#tables-rows .trow:nth-child(2)'); // speaks "Three twos are six"
+  await page.click('#tables-play'); // start recitation
+  await page.click('#tables-play'); // stop it again — no crash
+  await shot('42-tables.png');
+  await page.click('#tables-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'tables quiz advances after correct answer');
+  await back();
+  await page.waitForSelector('#screen-tables.active');
   await back();
   await home();
 

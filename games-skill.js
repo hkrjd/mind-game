@@ -362,10 +362,46 @@ const capsmallGame = (() => {
     '<p class="hint" data-t="capsmallHint"></p>' +
     '<div id="cs-dots"></div>' +
     '<div id="cs-area" data-round="0" data-matched="0">' +
+    '<svg id="cs-lines" aria-hidden="true"></svg>' +
     '<div id="cs-caps" class="cs-col"></div>' +
     '<div id="cs-smalls" class="cs-col"></div></div>');
 
   const state = { round: 0, letters: [], selected: null, matched: 0 };
+  const matches = []; // {capEl, smallEl, hex} — connecting lines of the current round
+
+  function lineCenter(el) {
+    const area = $('cs-area').getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return [r.left + r.width / 2 - area.left, r.top + r.height / 2 - area.top];
+  }
+
+  function drawLine(m, animate) {
+    const a = lineCenter(m.capEl);
+    const b = lineCenter(m.smallEl);
+    const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    ln.setAttribute('x1', a[0]);
+    ln.setAttribute('y1', a[1]);
+    ln.setAttribute('x2', b[0]);
+    ln.setAttribute('y2', b[1]);
+    ln.setAttribute('stroke', m.hex);
+    ln.setAttribute('stroke-width', '6');
+    ln.setAttribute('stroke-linecap', 'round');
+    if (animate && !REDUCED) {
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      ln.style.strokeDasharray = String(len);
+      ln.style.strokeDashoffset = String(len);
+      ln.style.transition = 'stroke-dashoffset .4s ease';
+      requestAnimationFrame(() => { ln.style.strokeDashoffset = '0'; });
+    }
+    $('cs-lines').appendChild(ln);
+  }
+
+  function redrawLines() {
+    const svg = $('cs-lines');
+    svg.innerHTML = '';
+    matches.forEach((m) => drawLine(m, false));
+  }
+  window.addEventListener('resize', redrawLines);
 
   function dots() {
     const d = $('cs-dots');
@@ -381,6 +417,8 @@ const capsmallGame = (() => {
     state.letters = sample(LETTERS, 4).map((l) => l.ch);
     state.selected = null;
     state.matched = 0;
+    matches.length = 0;
+    $('cs-lines').innerHTML = '';
     $('cs-area').dataset.round = String(state.round + 1);
     $('cs-area').dataset.matched = '0';
     dots();
@@ -430,6 +468,9 @@ const capsmallGame = (() => {
       state.selected.classList.add('matched');
       state.selected.classList.remove('selected');
       const ch = b.dataset.l;
+      const m = { capEl: state.selected, smallEl: b, hex: COLORS[state.matched % COLORS.length].hex };
+      matches.push(m);
+      drawLine(m, true);
       state.selected = null;
       state.matched++;
       $('cs-area').dataset.matched = String(state.matched);
@@ -963,4 +1004,144 @@ const stickersGame = (() => {
 GAMES.stickers = {
   emoji: '🏆', color: 'var(--sunny)', screen: 'screen-stickers',
   enter() { stickersGame.render(); }, onLang() { stickersGame.render(); }
+};
+
+/* ================= Tables (Pahade) ================= */
+
+Object.assign(T, {
+  tablesHint: { en: 'Pick a table, listen, and learn!', hi: 'टेबल चुनो, सुनो और याद करो!' }
+});
+GAME_TITLES.tables = { en: 'Tables', hi: 'पहाड़े', hiSay: 'Pahade' };
+
+const tablesGame = (() => {
+  buildScreen('tables',
+    '<p class="hint" data-t="tablesHint"></p>' +
+    '<div id="tables-picker"></div>' +
+    '<div id="tables-rows" data-table="2"></div>' +
+    '<div class="tables-btns">' +
+    '<button id="tables-play" class="big-btn" data-t="playAllBtn"></button>' +
+    '<button id="tables-quiz" class="big-btn quiz-btn" data-t="quizBtn"></button></div>');
+
+  const PLURALS = ['', 'ones', 'twos', 'threes', 'fours', 'fives', 'sixes', 'sevens', 'eights', 'nines', 'tens'];
+  const state = { table: 2, playing: false, timer: null, line: -1 };
+
+  // Indian school rote style: "Two ones are two, two twos are four..."
+  function tableLine(a, b) {
+    const prod = enNumberName(a * b).toLowerCase();
+    if (a === 1) return 'One ' + enNumberName(b).toLowerCase() + ' is ' + prod;
+    return enNumberName(a) + ' ' + PLURALS[b] + ' are ' + prod;
+  }
+
+  function highlight(i) {
+    state.line = i;
+    document.querySelectorAll('#tables-rows .trow').forEach((el, k) => {
+      el.classList.toggle('active', k === i);
+    });
+  }
+
+  // Recitation is always English — that is the point of this game.
+  function speakLine(b) {
+    highlight(b - 1);
+    speech.speak(tableLine(state.table, b) + '!', 'en');
+  }
+
+  function stopPlay() {
+    state.playing = false;
+    clearTimeout(state.timer);
+    $('tables-play').textContent = T.playAllBtn[store.getLang()];
+  }
+
+  function playFrom(b) {
+    if (!state.playing || b > 10) {
+      stopPlay();
+      highlight(-1);
+      return;
+    }
+    speakLine(b);
+    state.timer = setTimeout(() => playFrom(b + 1), tableLine(state.table, b).length * 80 + 1100);
+  }
+
+  function render() {
+    const picker = $('tables-picker');
+    if (!picker.children.length) {
+      for (let a = 1; a <= 10; a++) {
+        const btn = document.createElement('button');
+        btn.className = 'hour-btn';
+        btn.textContent = a;
+        btn.dataset.a = String(a);
+        btn.addEventListener('click', () => {
+          sfx.pop();
+          stopPlay();
+          speech.stop();
+          state.table = a;
+          state.line = -1;
+          render();
+        });
+        picker.appendChild(btn);
+      }
+    }
+    picker.querySelectorAll('.hour-btn').forEach((btn) => {
+      btn.classList.toggle('selected', Number(btn.dataset.a) === state.table);
+    });
+    const rows = $('tables-rows');
+    rows.dataset.table = String(state.table);
+    rows.innerHTML = '';
+    for (let b = 1; b <= 10; b++) {
+      const r = document.createElement('button');
+      r.className = 'trow';
+      r.innerHTML = '<span class="tr-eq">' + state.table + ' × ' + b + ' = ' + (state.table * b) + '</span>' +
+        '<span class="tr-words">' + tableLine(state.table, b) + '</span>';
+      r.addEventListener('click', () => { sfx.pop(); stopPlay(); speakLine(b); });
+      rows.appendChild(r);
+    }
+    highlight(state.line);
+  }
+
+  function makeQuestion() {
+    const a = state.table;
+    const b = 1 + Math.floor(Math.random() * 10);
+    const prod = a * b;
+    const opts = [prod];
+    [a * (b + 1), a * (b - 1), prod + a, prod - a, prod + 1].forEach((c) => {
+      if (opts.length < 3 && c > 0 && c <= 120 && !opts.includes(c)) opts.push(c);
+    });
+    const line = prod + '! ' + tableLine(a, b) + '!';
+    return {
+      key: 'T' + a + '_' + b,
+      prompt: phrase('What is ' + a + ' times ' + b + '?', a + ' गुणा ' + b + ' कितना होता है?', a + ' guna ' + b + ' kitna hota hai?'),
+      extra: '<div class="math-eq">' + a + ' × ' + b + ' = ?</div>',
+      choices: shuffle(opts).map((n) => ({ key: String(n), html: '<span>' + n + '</span>' })),
+      answer: String(prod),
+      answerPhrase: phrase(line, line, line) // English recitation in both language modes
+    };
+  }
+
+  $('tables-play').addEventListener('click', () => {
+    if (state.playing) {
+      stopPlay();
+      speech.stop();
+      return;
+    }
+    state.playing = true;
+    $('tables-play').textContent = T.stopBtn[store.getLang()];
+    playFrom(1);
+  });
+  $('tables-quiz').addEventListener('click', () => {
+    stopPlay();
+    quiz.start({ make: makeQuestion, backTo: 'screen-tables' });
+  });
+
+  return {
+    enter() { stopPlay(); render(); },
+    onLang() {
+      render();
+      $('tables-play').textContent = (state.playing ? T.stopBtn : T.playAllBtn)[store.getLang()];
+    },
+    onLeave: stopPlay
+  };
+})();
+
+GAMES.tables = {
+  emoji: '✖️', color: 'var(--sky)', screen: 'screen-tables',
+  enter() { tablesGame.enter(); }, onLang() { tablesGame.onLang(); }, onLeave() { tablesGame.onLeave(); }
 };

@@ -990,7 +990,7 @@ const GAMES = {
 // so this list can name games that a later script registers.
 const HOME_SECTIONS = [
   { title: { en: '📚 ABC & Words', hi: '📚 ABC और शब्द' }, games: ['abc', 'tracing', 'spelling', 'phonics', 'capsmall'] },
-  { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'board100', 'clock', 'tower'] },
+  { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'tables', 'board100', 'clock', 'tower'] },
   { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'traffic'] },
   { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['memory', 'puzzle', 'maze', 'shadow', 'skypop', 'drawing', 'gardener', 'rhymes', 'stickers'] }
 ];
