@@ -3,7 +3,7 @@
 A learning game for little kids (around age 5) that teaches through play — in **Hindi and English together**.
 छोटे बच्चों (लगभग 5 साल) के लिए एक गेम जो खेल-खेल में सिखाता है — **हिंदी और English दोनों में**।
 
-No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **27 games** in one app.
+No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **38 games** in one app.
 
 ## 🎮 The games / गेम्स
 
@@ -15,6 +15,9 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🔡 **Word Banao / शब्द बनाओ** | Spell CAT, DOG, SUN… by tapping letter tiles in order |
 | 🗣️ **Phonics** | "Which one starts with B?" — first-letter sounds |
 | 🔠 **Big & Small Aa / बड़ा-छोटा** | Match capital letters with small letters (A ↔ a) — a colored line connects each pair |
+| ↔️ **Ulta-Pulta / उल्टा-पुल्टा** | Opposites: big-small 🐘🐜, hot-cold 🔥❄️, day-night ☀️🌙… |
+| 🙋 **Suno aur Karo / सुनो और करो** | Listen — "अपनी नाक छुओ!" — and tap the right body part |
+| 📖 **Kahaniyan / कहानियाँ** | 4 tiny bilingual picture stories, read aloud line by line, with a question at the end |
 
 ### 🔢 Numbers & Math / गिनती और मैथ
 | Game | What the child learns |
@@ -24,6 +27,16 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 💯 **Ginti 1–100** | Tap any number on the 100-board and hear it (एक… सौ), plus find-the-number rounds |
 | 🕐 **Clock / घड़ी** | Read full hours on an analog clock ("3 बजे हैं / It's 3 o'clock") |
 | 🏗️ **Tower** | Stack falling blocks — every floor is counted aloud |
+| 💰 **Sikke ₹ / सिक्के** | Learn Indian coins (₹1, ₹2, ₹5, ₹10) and add small amounts |
+| ⚖️ **Zyada ya Kam? / ज़्यादा या कम?** | Count two groups — which has more, which has less? |
+
+### 🧠 Brain Games / दिमाग के खेल
+| Game | What the child learns |
+|---|---|
+| 🔴 **Patterns / पैटर्न** | 🔴🔵🔴🔵❓ — what comes next? Colors, shapes and picture patterns |
+| 👀 **What Vanished? / क्या गायब हुआ?** | Look at 4 things, one disappears — remember which! |
+| 🤔 **Odd One Out / अलग कौन?** | Three belong together — tap the different one |
+| 🔍 **I Spy / जासूस** | A busy scene of 24 things — find the one that's called out |
 
 ### 🌍 Know the World / दुनिया जानो
 | Game | What the child learns |
@@ -35,6 +48,8 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🏠 **Everyday Things / रोज़ की चीज़ें** | कुर्सी, चम्मच, किताब… household words |
 | 🌸 **Flowers / फूल** | गुलाब, सूरजमुखी, कमल… |
 | 🚦 **Traffic** | Red light = stop, green light = go! Drive the car safely |
+| 🇮🇳 **Mera Bharat / मेरा भारत** | Tiranga, mor, baagh, kamal, diya, namaste — India ki pehchaan |
+| 🧑‍🚒 **Madadgaar / मददगार** | Community helpers — "who helps when you are sick?" |
 
 ### 🎨 Play & Fun / खेल और मस्ती
 | Game | What the child learns |
