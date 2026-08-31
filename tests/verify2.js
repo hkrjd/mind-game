@@ -42,7 +42,7 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 60, 'home shows all 60 game cards');
+  ok(await page.locator('#home-grid .game-card').count() === 73, 'home shows all 73 game cards');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -756,6 +756,154 @@ function ok(cond, msg) {
   ok(true, 'colour-mixing quiz advances');
   await back();
   await page.waitForSelector('#screen-mixcolors.active');
+  await back();
+  await home();
+
+  console.log('# gaadi pack');
+  await openGame('vehicles');
+  ok(await page.locator('#vehicles-grid .tile').count() === 12, '12 vehicles to tap');
+  await page.click('#vehicles-grid .tile:nth-child(1)');
+  await shot('74-vehicles.png');
+  await page.click('#vehicles-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'vehicles quiz advances');
+  await back();
+  await page.waitForSelector('#screen-vehicles.active');
+  await back();
+  await home();
+
+  await openGame('whereride');
+  const wrZone = await page.getAttribute('#wr-tray .wr-item:nth-child(1)', 'data-zone');
+  await page.click('#wr-tray .wr-item:nth-child(1)');
+  await page.click('#wr-zones .wr-zone[data-accept="' + wrZone + '"]');
+  ok(await page.getAttribute('#wr-tray', 'data-placed') === '1',
+    'vehicle sent to where it travels (' + wrZone + ')');
+  await shot('75-whereride.png');
+  await back();
+  await home();
+
+  console.log('# ghar-parivar pack');
+  await openGame('family');
+  ok(await page.locator('#family-tree .fam-tile').count() === 8, 'family tree shows 8 people');
+  ok(await page.locator('#family-tree .fam-row').count() === 3, 'three generations, three rows');
+  await page.click('#family-tree .fam-tile[data-who="dada"]');
+  await shot('76-family.png');
+  await page.click('#family-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'family quiz advances');
+  await back();
+  await page.waitForSelector('#screen-family.active');
+  await back();
+  await home();
+
+  await openGame('dress');
+  const dressNeed = await page.getAttribute('#dress-scene', 'data-need');
+  await page.click('#dress-choices .dress-choice[data-item="' + dressNeed + '"]');
+  ok(await page.locator('#dress-worn .dress-item').count() === 1,
+    'the right thing for the weather goes on (' + dressNeed + ')');
+  await shot('77-dress.png');
+  await back();
+  await home();
+
+  await openGame('tidy');
+  const tidyBin = await page.getAttribute('#tidy-room .tidy-thing:nth-child(1)', 'data-bin');
+  // Scattered things overlap, so click the element directly rather than by position.
+  await page.$eval('#tidy-room .tidy-thing:nth-child(1)', (el) => el.click());
+  await page.click('#tidy-bins .tidy-bin[data-accept="' + tidyBin + '"]');
+  ok(await page.getAttribute('#tidy-room', 'data-left') === '9',
+    'putting a thing away clears it from the room (' + tidyBin + ')');
+  await shot('78-tidy.png');
+  await back();
+  await home();
+
+  await openGame('festivals');
+  ok(await page.locator('#fest-grid .tile').count() === 6, '6 festivals');
+  await page.click('#fest-grid .tile:nth-child(1)');
+  await shot('79-festivals.png');
+  await page.click('#fest-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'festival quiz advances');
+  await back();
+  await page.waitForSelector('#screen-festivals.active');
+  await back();
+  await home();
+
+  console.log('# masti pack');
+  await openGame('rangoli');
+  await page.click('#rangoli-grid .rdot[data-r="1"][data-c="2"]');
+  ok(await page.getAttribute('#rangoli-grid', 'data-lit') === '4', 'one tap lights four dots (symmetry)');
+  await page.click('#rangoli-colors .rang-chip:nth-child(4)');
+  await page.click('#rangoli-grid .rdot[data-r="0"][data-c="0"]');
+  ok(await page.getAttribute('#rangoli-grid', 'data-lit') === '8', 'a second colour adds four more');
+  await shot('80-rangoli.png');
+  await page.click('#rangoli-clear');
+  ok(await page.getAttribute('#rangoli-grid', 'data-lit') === '0', 'clean wipes the rangoli');
+  await back();
+  await home();
+
+  await openGame('facemaker');
+  const face0 = await page.getAttribute('#face-scene', 'data-face');
+  await page.click('.face-ctrl[data-kind="face"] .face-arrow[data-dir="1"]');
+  ok(await page.getAttribute('#face-scene', 'data-face') !== face0, 'the face carousel changes the face');
+  await page.click('.face-ctrl[data-kind="hat"] .face-arrow[data-dir="1"]');
+  ok(await page.getAttribute('#face-scene', 'data-hat') === '1', 'a hat goes on');
+  await page.click('#face-talk');
+  await shot('81-facemaker.png');
+  await back();
+  await home();
+
+  await openGame('cups');
+  await page.waitForFunction(() => document.getElementById('cups-row').dataset.phase === 'guess');
+  const ballCup = await page.getAttribute('#cups-row', 'data-ball');
+  await shot('82-cups.png');
+  await page.click('#cups-row .cup[data-cup="' + ballCup + '"]');
+  await page.waitForSelector('#cups-row .cup[data-cup="' + ballCup + '"].open');
+  ok(true, 'the ball is found under the cup it followed (' + ballCup + ')');
+  await back();
+  await home();
+
+  console.log('# sangeet pack');
+  await openGame('piano');
+  ok(await page.locator('#piano-keys .pkey').count() === 7, '7 piano keys (Sa to Ni)');
+  await page.click('#piano-keys .pkey[data-note="ga"]');
+  ok(await page.getAttribute('#piano-keys', 'data-last') === 'ga', 'tapping a key plays that note');
+  await shot('83-piano.png');
+  await back();
+  await home();
+
+  // Both echo games: wait for the pattern to finish, then play it back.
+  const echoCopy = async (id) => {
+    await page.waitForFunction((x) => document.getElementById(x + '-area').dataset.phase === 'copy', id);
+    const seq = (await page.getAttribute('#' + id + '-area', 'data-seq')).split(',');
+    for (const k of seq) await page.click('#' + id + '-pads .echo-pad[data-pad="' + k + '"]');
+    return seq;
+  };
+
+  await openGame('tune');
+  const tuneSeq = await echoCopy('tune');
+  ok(await page.getAttribute('#tune-area', 'data-step') === String(tuneSeq.length),
+    'tune played back note for note (' + tuneSeq.join(' ') + ')');
+  await shot('84-tune.png');
+  await back();
+  await home();
+
+  await openGame('drum');
+  const drumSeq = await echoCopy('drum');
+  ok(await page.getAttribute('#drum-area', 'data-step') === String(drumSeq.length),
+    'beat played back (' + drumSeq.join(' ') + ')');
+  await shot('85-drum.png');
+  await back();
+  await home();
+
+  await openGame('yoga');
+  const pose0 = await page.getAttribute('#yoga-pose', 'data-pose');
+  ok(!!pose0, 'a pose is shown: ' + pose0);
+  await shot('86-yoga.png');
+  await page.click('#yoga-next');
+  ok(await page.getAttribute('#yoga-pose', 'data-pose') !== pose0, 'the next-pose button moves on');
   await back();
   await home();
 

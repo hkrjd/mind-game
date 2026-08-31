@@ -413,6 +413,8 @@ const sfx = (() => {
 
   return {
     ensure,
+    // A single musical note, for the instrument games.
+    note(freq, dur, type) { ensure(); tone(freq, 0, dur || 0.45, type || 'triangle', 0.2); },
     pop() { ensure(); tone(660, 0, 0.09, 'triangle', 0.12); },
     flip() { ensure(); tone(440, 0, 0.08, 'sine', 0.1); tone(590, 0.06, 0.08, 'sine', 0.1); },
     correct() { ensure(); tone(523.25, 0, 0.15, 'triangle'); tone(659.25, 0.12, 0.15, 'triangle'); tone(783.99, 0.24, 0.28, 'triangle'); },
@@ -1082,10 +1084,10 @@ const GAMES = {
 const HOME_SECTIONS = [
   { title: { en: '📚 ABC & Words', hi: '📚 ABC और शब्द' }, games: ['abc', 'tracing', 'spelling', 'phonics', 'capsmall', 'matra', 'hindiword', 'readword', 'rhymewords', 'opposites', 'listen', 'leftright', 'stories'] },
   { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'countit', 'numline', 'tables', 'board100', 'clock', 'compare', 'share', 'measure', 'coins', 'shop', 'week', 'tower'] },
-  { title: { en: '🧠 Brain Games', hi: '🧠 दिमाग के खेल' }, games: ['memory', 'pattern', 'missing', 'oddone', 'ispy', 'puzzle', 'maze', 'shadow', 'train', 'sizes', 'order'] },
-  { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'bharat', 'helpers', 'feed', 'feelings', 'safety', 'traffic'] },
+  { title: { en: '🧠 Brain Games', hi: '🧠 दिमाग के खेल' }, games: ['memory', 'pattern', 'missing', 'oddone', 'ispy', 'cups', 'puzzle', 'maze', 'shadow', 'train', 'sizes', 'order'] },
+  { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'bharat', 'festivals', 'family', 'helpers', 'feed', 'feelings', 'safety', 'vehicles', 'whereride', 'traffic'] },
   { title: { en: '🔬 Science & Nature', hi: '🔬 विज्ञान और कुदरत' }, games: ['floatsink', 'homes', 'babies', 'mixcolors', 'weather', 'gardener'] },
-  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['farm', 'skypop', 'drawing', 'rhymes', 'stickers'] }
+  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['farm', 'skypop', 'drawing', 'rangoli', 'facemaker', 'dress', 'tidy', 'yoga', 'piano', 'tune', 'drum', 'rhymes', 'stickers'] }
 ];
 
 function gameCard(id) {

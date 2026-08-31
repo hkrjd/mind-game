@@ -3,7 +3,7 @@
 A learning game for little kids (around age 5) that teaches through play — in **Hindi and English together**.
 छोटे बच्चों (लगभग 5 साल) के लिए एक गेम जो खेल-खेल में सिखाता है — **हिंदी और English दोनों में**।
 
-No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **60 games** in one app.
+No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **73 games** in one app.
 
 ## 🎮 The games / गेम्स
 
@@ -51,6 +51,7 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🚂 **Rail Gaadi / रेल गाड़ी** | Sort things into the right train wagons — fruits vs animals, red vs blue — then chhuk chhuk! |
 | 🌅 **Pehle-Phir / पहले-फिर** | What happens first? Put 4-step stories in order: waking up, bedtime, cooking, a growing plant |
 | 📏 **Chhota-se-Bada / छोटे से बड़ा** | Arrange 4 sizes of the same thing from smallest to biggest |
+| 🥣 **Find the Ball / कटोरी खेल** | The ball hides under a bowl, the bowls shuffle — keep your eyes on it |
 
 ### 🌍 Know the World / दुनिया जानो
 | Game | What the child learns |
@@ -63,6 +64,10 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🌸 **Flowers / फूल** | गुलाब, सूरजमुखी, कमल… |
 | 🚦 **Traffic** | Red light = stop, green light = go! Drive the car safely |
 | 🇮🇳 **Mera Bharat / मेरा भारत** | Tiranga, mor, baagh, kamal, diya, namaste — India ki pehchaan |
+| 🪔 **Tyohaar / त्योहार** | Diwali, Holi, Eid, Raksha Bandhan, Christmas, Pongal — whose is this? |
+| 👨‍👩‍👧 **Mera Parivar / मेरा परिवार** | The family tree: dada, dadi, chacha, bhaiya, didi — and who belongs to whom |
+| 🚌 **Gaadiyan / गाड़ियाँ** | 12 vehicles and the noises they make ("Auto! Tuk tuk!") |
+| 🛣️ **Sky, Road, Water / ज़मीन-पानी-आसमान** | Send each vehicle where it really travels |
 | 🧑‍🚒 **Madadgaar / मददगार** | Community helpers — "who helps when you are sick?" |
 | 🍽️ **Khana Khilao / खाना खिलाओ** | The monkey asks for a banana — feed each animal its favourite food |
 | 😊 **Bhavna / भावना** | Happy, sad, scared, sleepy… name feelings and match them to little situations |
@@ -88,6 +93,14 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🔍 **Shadow Match / परछाई मिलाओ** | Match each picture with its shadow |
 | 🎈 **Sky Pop** | Bubbles float up — pop only the number/letter that was called |
 | 🖍️ **Drawing** | Free drawing with crayons, plus a magical neon **Glow mode** |
+| 🌺 **Rangoli / रंगोली** | Tap one dot and four light up — a symmetrical rangoli, always |
+| 😜 **Silly Faces / चेहरा बनाओ** | Mix faces, hats, glasses and bows, then make the face talk |
+| 🧥 **Get Dressed / कपड़े पहनाओ** | Sun, rain or snow — pick the right thing to wear |
+| 🧺 **Tidy Up / सही जगह रखो** | Put every toy, sock and wrapper where it belongs until the room is clean |
+| 🤸 **Move & Stretch / कसरत** | Copy the pose and hold it while the count runs down — a real body break |
+| 🎹 **Baja / बाजा** | Seven coloured keys: Sa Re Ga Ma Pa Dha Ni |
+| 🎶 **Copy the Tune / धुन कॉपी** | Hear a little tune, then play it back note for note |
+| 🥁 **Keep the Beat / ताल** | Dhol, tabla, manjira — hear the rhythm and echo it |
 | 🎵 **Rhymes / कविताएँ** | Twinkle Twinkle, Baa Baa Black Sheep, मछली जल की रानी, चंदा मामा |
 | 🏆 **Sticker Book / स्टिकर बुक** | Every 25 ⭐ unlocks a new sticker for the shelf — tap the star counter to open it |
 
@@ -127,13 +140,13 @@ A minute later the game is live at `https://<your-username>.github.io/mind-game/
 ## 🛠️ Tech notes
 
 - Zero-build vanilla HTML/CSS/JS — no frameworks, no assets: emoji for pictures, SVG/canvas for shapes and puzzles, Web Speech API for voices, Web Audio API for jingles.
-- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `games-read.js`, `games-math2.js`, `games-nature.js`, `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
+- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `games-read.js`, `games-math2.js`, `games-nature.js`, `games-world2.js`, `games-fun2.js`, `games-music.js`, `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
 - Works fully offline: from `file://` directly, and as an installed PWA via the service worker. Degrades gracefully when speech/audio/localStorage are unavailable.
 - **When deploying an update, bump `VERSION` in `sw.js`** so installed apps fetch the new files.
 - Smoke tests (drive every game headlessly and screenshot each screen):
   ```
   node tests/verify.js      # core: first 4 games, quiz engine, Hindi toggle, persistence
-  node tests/verify2.js     # the 56 newer games + varnamala, mute, stickers, back button
+  node tests/verify2.js     # the 69 newer games + varnamala, mute, stickers, back button
   node tests/verify-pwa.js  # manifest, icons, service worker, offline boot (needs http-server)
   ```
   Requires Node with [Playwright](https://playwright.dev) available (`npm i -g playwright` + browsers).

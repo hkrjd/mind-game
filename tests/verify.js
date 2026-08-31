@@ -32,7 +32,7 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 60, 'home shows 60 game cards');
+  ok(await page.locator('#home-grid .game-card').count() === 73, 'home shows 73 game cards');
   ok(await page.locator('#home-grid .home-cat').count() === 6, 'home shows 6 category headings');
   await shot('01-home.png');
 
