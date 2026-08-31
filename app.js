@@ -1080,11 +1080,12 @@ const GAMES = {
 // Home layout: sections rendered in this order; ids missing from GAMES are skipped,
 // so this list can name games that a later script registers.
 const HOME_SECTIONS = [
-  { title: { en: '📚 ABC & Words', hi: '📚 ABC और शब्द' }, games: ['abc', 'tracing', 'spelling', 'phonics', 'capsmall', 'opposites', 'listen', 'leftright', 'stories'] },
-  { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'tables', 'board100', 'clock', 'compare', 'coins', 'shop', 'week', 'tower'] },
+  { title: { en: '📚 ABC & Words', hi: '📚 ABC और शब्द' }, games: ['abc', 'tracing', 'spelling', 'phonics', 'capsmall', 'matra', 'hindiword', 'readword', 'rhymewords', 'opposites', 'listen', 'leftright', 'stories'] },
+  { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'countit', 'numline', 'tables', 'board100', 'clock', 'compare', 'share', 'measure', 'coins', 'shop', 'week', 'tower'] },
   { title: { en: '🧠 Brain Games', hi: '🧠 दिमाग के खेल' }, games: ['memory', 'pattern', 'missing', 'oddone', 'ispy', 'puzzle', 'maze', 'shadow', 'train', 'sizes', 'order'] },
-  { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'bharat', 'helpers', 'feed', 'feelings', 'weather', 'safety', 'traffic'] },
-  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['farm', 'skypop', 'drawing', 'gardener', 'rhymes', 'stickers'] }
+  { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'bharat', 'helpers', 'feed', 'feelings', 'safety', 'traffic'] },
+  { title: { en: '🔬 Science & Nature', hi: '🔬 विज्ञान और कुदरत' }, games: ['floatsink', 'homes', 'babies', 'mixcolors', 'weather', 'gardener'] },
+  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['farm', 'skypop', 'drawing', 'rhymes', 'stickers'] }
 ];
 
 function gameCard(id) {

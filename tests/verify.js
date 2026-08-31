@@ -32,8 +32,8 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 48, 'home shows 48 game cards');
-  ok(await page.locator('#home-grid .home-cat').count() === 5, 'home shows 5 category headings');
+  ok(await page.locator('#home-grid .game-card').count() === 60, 'home shows 60 game cards');
+  ok(await page.locator('#home-grid .home-cat').count() === 6, 'home shows 6 category headings');
   await shot('01-home.png');
 
   // Answers the currently shown quiz question via the data-answer hook.

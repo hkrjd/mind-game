@@ -42,7 +42,7 @@ function ok(cond, msg) {
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 48, 'home shows all 48 game cards');
+  ok(await page.locator('#home-grid .game-card').count() === 60, 'home shows all 60 game cards');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -606,6 +606,157 @@ function ok(cond, msg) {
   await shot('61-week.png');
   await page.waitForSelector('#celebrate.show'); // full week = instant celebration
   await page.click('#btn-cele-home');
+  await home();
+
+  console.log('# padhna pack');
+  await openGame('matra');
+  await page.click('#matra-cons .chip[data-c="म"]');
+  await page.click('#matra-list .chip[data-m="ई"]');
+  ok(await page.getAttribute('#matra-big', 'data-akshar') === 'मी', 'matra builder joins म + ई into मी');
+  await shot('62-matra.png');
+  await page.click('#matra-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'matra quiz advances after a correct answer');
+  await back();
+  await page.waitForSelector('#screen-matra.active');
+  await back();
+  await home();
+
+  await openGame('hindiword');
+  const hwParts = (await page.getAttribute('#hw-slots', 'data-parts')).split(',');
+  for (const part of hwParts) {
+    await page.click('#hw-bank .bank-tile[data-l="' + part + '"]:not(.used)');
+  }
+  ok(await page.getAttribute('#hw-slots', 'data-filled') === String(hwParts.length),
+    'hindi word built in order (' + hwParts.join('+') + ')');
+  await shot('63-hindiword.png');
+  await back();
+  await home();
+
+  await openGame('readword');
+  await page.click('#readword-start');
+  await page.waitForSelector('#screen-quiz.active');
+  ok(await page.locator('#quiz-extra .read-word').count() === 1, 'read-the-word shows the written word');
+  await shot('64-readword.png');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'readword quiz advances');
+  await back();
+  await back();
+  await home();
+
+  await openGame('rhymewords');
+  await page.click('#rhyme-start');
+  await page.waitForSelector('#screen-quiz.active');
+  ok(await page.locator('#quiz-choices .quiz-tile .t-word').count() === 3, 'rhyme choices show their words');
+  await shot('65-rhyme.png');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'rhyme quiz advances');
+  await back();
+  await back();
+  await home();
+
+  console.log('# math-2 pack');
+  await openGame('countit');
+  const cTotal = Number(await page.getAttribute('#count-scene', 'data-total'));
+  ok(await page.locator('#count-scene .count-item').count() === cTotal, cTotal + ' things to count');
+  for (let i = 0; i < cTotal; i++) await page.click('#count-scene .count-item:not(.counted)');
+  ok(await page.getAttribute('#count-scene', 'data-counted') === String(cTotal),
+    'each thing counts exactly once');
+  await page.waitForSelector('#count-choices:not([hidden])');
+  const cAns = await page.getAttribute('#count-choices', 'data-answer');
+  ok(cAns === String(cTotal), 'the number to find is the count');
+  await shot('66-countit.png');
+  await page.click('#count-choices .count-choice[data-n="' + cAns + '"]');
+  await page.waitForFunction(() => document.getElementById('countit-dots').querySelectorAll('.dot.filled').length === 1);
+  ok(true, 'counting round completed');
+  await back();
+  await home();
+
+  await openGame('numline');
+  await page.click('#numline-start');
+  await page.waitForSelector('#screen-quiz.active');
+  ok(await page.locator('#quiz-extra .nl-cell').count() === 4, 'number line shows 4 cells');
+  ok(await page.locator('#quiz-extra .nl-cell.nl-q').count() === 1, 'exactly one number is missing');
+  await shot('67-numline.png');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'numline quiz advances');
+  await back();
+  await back();
+  await home();
+
+  await openGame('share');
+  const plateCount = await page.locator('#share-plates .share-plate').count();
+  let shareLeft = Number(await page.getAttribute('#share-tray', 'data-left'));
+  ok(shareLeft % plateCount === 0, shareLeft + ' things share evenly between ' + plateCount + ' plates');
+  for (let i = 0; shareLeft > 0 && i < 30; i++) {
+    await page.click('#share-plates .share-plate:nth-child(' + ((i % plateCount) + 1) + ')');
+    shareLeft = Number(await page.getAttribute('#share-tray', 'data-left'));
+  }
+  ok(Number(await page.getAttribute('#share-plates', 'data-per')) > 0,
+    'sharing one-by-one round the plates ends up equal');
+  await shot('68-share.png');
+  await back();
+  await home();
+
+  await openGame('measure');
+  const mNeed = Number(await page.getAttribute('#meas-area', 'data-need'));
+  for (let i = 0; i < mNeed; i++) await page.click('#meas-add');
+  ok(await page.getAttribute('#meas-area', 'data-blocks') === String(mNeed),
+    'block tower built to ' + mNeed + ' blocks');
+  await shot('69-measure.png');
+  await back();
+  await home();
+
+  console.log('# vigyan pack');
+  await openGame('floatsink');
+  const fsAns = await page.getAttribute('#fs-tank', 'data-answer');
+  await page.click('#fs-btns .fs-btn[data-side="' + fsAns + '"]');
+  await page.waitForSelector('#fs-item.' + fsAns);
+  ok(true, 'the tank shows what really happens (' + fsAns + ')');
+  await shot('70-floatsink.png');
+  await page.waitForFunction(() => document.getElementById('fs-tank').dataset.round === '2');
+  ok(true, 'float/sink moves on to the next thing');
+  await back();
+  await home();
+
+  await openGame('homes');
+  const firstHome = await page.getAttribute('#homes-tray .home-item:nth-child(1)', 'data-home');
+  await page.click('#homes-tray .home-item:nth-child(1)');
+  await page.click('#homes-targets .home-target[data-accept="' + firstHome + '"]');
+  ok(await page.getAttribute('#homes-tray', 'data-placed') === '1',
+    'animal moves into its own home (' + firstHome + ')');
+  ok(await page.locator('#homes-targets .home-target[data-accept="' + firstHome + '"] .home-mini').count() === 1,
+    'the home now shows the animal inside');
+  await shot('71-homes.png');
+  await back();
+  await home();
+
+  await openGame('babies');
+  const babyKey = await page.getAttribute('#babies-moms .mom-tile:nth-child(1)', 'data-pair');
+  await page.click('#babies-moms .mom-tile:nth-child(1)');
+  await page.click('#babies-kids .kid-tile[data-pair="' + babyKey + '"]');
+  ok(await page.getAttribute('#babies-area', 'data-matched') === '1',
+    'mother matched with her baby (' + babyKey + ')');
+  await shot('72-babies.png');
+  await back();
+  await home();
+
+  await openGame('mixcolors');
+  await page.click('#mix-row .mix-blob[data-c="red"]');
+  await page.click('#mix-row .mix-blob[data-c="yellow"]');
+  ok(await page.getAttribute('#mix-bowl', 'data-result') === 'Orange', 'red + yellow makes orange');
+  await shot('73-mixcolors.png');
+  await page.click('#mix-quiz');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
+  ok(true, 'colour-mixing quiz advances');
+  await back();
+  await page.waitForSelector('#screen-mixcolors.active');
+  await back();
   await home();
 
   console.log('# drawing');

@@ -75,7 +75,7 @@ function pngSize(buf) {
 
     await page.goto('http://127.0.0.1:' + PORT + '/');
     await page.waitForSelector('#home-grid .game-card');
-    ok(await page.locator('#home-grid .game-card').count() === 48, 'app boots over http with 48 cards');
+    ok(await page.locator('#home-grid .game-card').count() === 60, 'app boots over http with 60 cards');
     await page.waitForFunction(() => navigator.serviceWorker.getRegistration().then((r) => !!(r && r.active)), null, { timeout: 20000 });
     ok(true, 'service worker registered and active');
     await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 20000 });
@@ -85,7 +85,7 @@ function pngSize(buf) {
     await context.setOffline(true);
     await page.reload();
     await page.waitForSelector('#home-grid .game-card', { timeout: 20000 });
-    ok(await page.locator('#home-grid .game-card').count() === 48, 'OFFLINE reload still boots the full app');
+    ok(await page.locator('#home-grid .game-card').count() === 60, 'OFFLINE reload still boots the full app');
     await page.click('#home-grid .game-card[data-game="abc"]');
     await page.waitForSelector('#screen-abc.active');
     ok(await page.locator('#abc-grid .tile').count() === 26, 'offline: a game opens and renders');
