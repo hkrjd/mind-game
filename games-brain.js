@@ -192,6 +192,7 @@ function oddQuestion() {
     key: 'O' + odd.en + three[0].en,
     prompt: T.oddPrompt,
     extra: '',
+    min: 3, // with two pictures there is no way to tell which is the odd one
     choices: shuffle(three.concat([odd])).map((it) => ({ key: it.en, html: '<span>' + it.emoji + '</span>' })),
     answer: odd.en,
     answerPhrase: phrase(

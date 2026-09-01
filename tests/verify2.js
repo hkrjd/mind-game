@@ -1117,6 +1117,97 @@ function ok(cond, msg) {
   ok(await page.evaluate(() => store.getStars()) === 0, 'a confirming second tap resets them');
   await home();
 
+  console.log('# audit regressions');
+  // Nothing may make the page itself scroll sideways on a small phone.
+  const small = await browser.newPage({ viewport: { width: 360, height: 740 } });
+  small.on('pageerror', (e) => errors.push('small pageerror: ' + e.message));
+  await small.addInitScript(() => {
+    try { localStorage.setItem('mg-mute', '1'); localStorage.setItem('mg-lang', 'hi'); } catch (e) { /* ignore */ }
+  });
+  await small.goto('file://' + path.join(ROOT, 'index.html'));
+  await small.waitForSelector('#cat-tiles .cat-tile');
+  const gameIds = await small.evaluate(() =>
+    HOME_SECTIONS.reduce((a, s) => a.concat(s.games.filter((g) => GAMES[g])), []));
+  const wide = [];
+  for (const id of gameIds) {
+    const over = await small.evaluate((g) => {
+      const e = GAMES[g];
+      showScreen(e.screen);
+      e.enter();
+      return document.documentElement.scrollWidth - document.documentElement.clientWidth;
+    }, id);
+    if (over > 2) wide.push(id + ' +' + over + 'px');
+  }
+  ok(wide.length === 0, 'no game screen overflows a 360px phone sideways' + (wide.length ? ': ' + wide.join(', ') : ''));
+
+  // The train leaves to the left, inside its own track — it used to drag the
+  // page out to 825px and leave the engine behind.
+  await small.evaluate(() => { const e = GAMES.train; showScreen(e.screen); e.enter(); });
+  await small.evaluate(() => {
+    const tr = document.getElementById('train-track');
+    tr.style.setProperty('--train-go', '-' + (tr.clientWidth + 80) + 'px');
+    tr.classList.add('going');
+  });
+  await small.waitForTimeout(500);
+  ok(await small.evaluate(() => document.documentElement.scrollWidth) <= 362,
+    'the departing train never makes the page scroll sideways');
+  ok(await small.evaluate(() => {
+    const s = getComputedStyle(document.getElementById('train-engine')).transform;
+    return s !== 'none' && new DOMMatrix(s).m41 < 0;
+  }), 'the engine leaves with its wagons, to the left');
+  await small.close();
+
+  // Ten floors have to fit even on a landscape phone.
+  const wideShort = await browser.newPage({ viewport: { width: 740, height: 400 } });
+  await wideShort.addInitScript(() => {
+    try { localStorage.setItem('mg-mute', '1'); localStorage.setItem('mg-lang', 'en'); } catch (e) { /* ignore */ }
+  });
+  await wideShort.goto('file://' + path.join(ROOT, 'index.html'));
+  await wideShort.waitForSelector('#cat-tiles .cat-tile');
+  const towerFit = await wideShort.evaluate(() => {
+    const e = GAMES.tower;
+    showScreen(e.screen);
+    e.enter();
+    const area = document.getElementById('tower-area');
+    const bh = parseInt(getComputedStyle(area).getPropertyValue('--tower-bh'), 10);
+    return area.clientHeight - 10 * bh - bh - 8;
+  });
+  ok(towerFit >= 0, 'the tenth tower floor still fits in landscape (' + towerFit + 'px spare)');
+  await wideShort.close();
+
+  // A two-picture "which is different?" cannot be answered.
+  await page.evaluate(() => store.setLevel('easy'));
+  await openGame('oddone');
+  await page.click('#oddone-start');
+  await page.waitForSelector('#quiz-choices .quiz-tile');
+  ok(await page.locator('#quiz-choices .quiz-tile').count() >= 3,
+    'odd-one-out keeps at least three pictures, even on easy');
+  await back();
+  await back();
+  await home();
+  await page.evaluate(() => store.setLevel('normal'));
+
+  // Letters that share a romanization must never appear together.
+  ok(await page.evaluate(() => {
+    for (let i = 0; i < 300; i++) {
+      const q = abcGame.varnaQuestion();
+      const roms = q.choices.map((c) => VARNAMALA.find((v) => v.ch === c.key).roman);
+      if (new Set(roms).size !== roms.length) return false;
+    }
+    return true;
+  }), 'no varnamala question offers two letters spelled the same way');
+
+  // The shopping list used to say "2 potatos" and "2 grapess".
+  ok(await page.evaluate(() => plural('potato', 2) === 'potatoes' && plural('grapes', 2) === 'grapes' &&
+    plural('tomato', 3) === 'tomatoes' && plural('apple', 2) === 'apples'),
+    'the shopping list says potatoes, tomatoes and grapes');
+
+  // Baby-animal tiles used to stay in Hindi whatever the language.
+  await openGame('babies');
+  const babyWord = await page.textContent('#babies-moms .baby-tile:nth-child(1) .t-word');
+  ok(!/[ऀ-ॿ]/.test(babyWord), 'baby-animal tiles follow the chosen language (' + babyWord + ')');
+  await home();
+
   console.log('# indian voice picking (mocked voices)');
   const p2 = await browser.newPage({ viewport: { width: 900, height: 700 } });
   p2.on('pageerror', (e) => errors.push('p2 pageerror: ' + e.message));

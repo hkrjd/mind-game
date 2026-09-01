@@ -77,7 +77,7 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | Game | What the child learns |
 |---|---|
 | 🛟 **Float or Sink / तैरता या डूबता** | Guess, then watch the tank show the truth — a stone sinks, a leaf floats |
-| 🪺 **Animal Homes / जानवर के घर** | Nest, burrow, kennel or water — put every animal where it lives |
+| 🪺 **Animal Homes / जानवर के घर** | Nest, burrow, house or water — put every animal where it lives |
 | 🐤 **Animal Babies / जानवर के बच्चे** | गाय → बछड़ा, मुर्गी → चूज़ा, तितली → इल्ली |
 | 🎨 **Mix Colours / रंग मिलाओ** | Pour two colours into the bowl: laal + peela = naarangi |
 | 🌦️ **Mausam / मौसम** | Sun, rain, snow, wind, clouds — and what to wear or drink in each |

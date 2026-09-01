@@ -27,11 +27,17 @@ Object.assign(T, {
 
 GAME_TITLES.shop = { en: 'Dukaan', hi: 'दुकान', hiSay: 'Dukaan' };
 
+// "potato" -> "potatoes", and words that are already plural stay put.
+function plural(word, n) {
+  if (n <= 1 || /s$/.test(word)) return word;
+  return /(o|ch|sh|s|x|z)$/.test(word) ? word + 'es' : word + 's';
+}
+
 const SHOP_ITEMS = [
   { emoji: '🍎', en: 'Apple', hi: 'सेब', hiSay: 'Seb', price: 2 },
-  { emoji: '🍌', en: 'Banana', hi: 'केला', hiSay: 'Kela', price: 1 },
+  { emoji: '🍌', en: 'Banana', hi: 'केला', hiPl: 'केले', hiSay: 'Kela', hiSayPl: 'Kele', price: 1 },
   { emoji: '🥭', en: 'Mango', hi: 'आम', hiSay: 'Aam', price: 2 },
-  { emoji: '🍊', en: 'Orange', hi: 'संतरा', hiSay: 'Santra', price: 1 },
+  { emoji: '🍊', en: 'Orange', hi: 'संतरा', hiPl: 'संतरे', hiSay: 'Santra', hiSayPl: 'Santre', price: 1 },
   { emoji: '🥕', en: 'Carrot', hi: 'गाजर', hiSay: 'Gaajar', price: 1 },
   { emoji: '🍅', en: 'Tomato', hi: 'टमाटर', hiSay: 'Tamatar', price: 1 },
   { emoji: '🥔', en: 'Potato', hi: 'आलू', hiSay: 'Aaloo', price: 1 },
@@ -57,9 +63,9 @@ const shopGame = (() => {
 
   function speakList() {
     const parts = state.need.map((n) => ({
-      en: n.count + ' ' + n.item.en.toLowerCase() + (n.count > 1 ? 's' : ''),
-      hi: n.count + ' ' + n.item.hi,
-      hiSay: n.count + ' ' + n.item.hiSay
+      en: n.count + ' ' + plural(n.item.en.toLowerCase(), n.count),
+      hi: n.count + ' ' + (n.count > 1 ? (n.item.hiPl || n.item.hi) : n.item.hi),
+      hiSay: n.count + ' ' + (n.count > 1 ? (n.item.hiSayPl || n.item.hiSay) : n.item.hiSay)
     }));
     sayPhrase(phrase(
       'Please bring ' + parts.map((p) => p.en).join(' and ') + '!',
@@ -199,11 +205,11 @@ GAME_TITLES.feed = { en: 'Khana Khilao', hi: 'खाना खिलाओ', hiS
 const FEED_PAIRS = [
   { animal: { emoji: '🐵', en: 'Monkey', hi: 'बंदर', hiSay: 'Bandar' }, food: { emoji: '🍌', en: 'Banana', hi: 'केला', hiSay: 'Kela' } },
   { animal: { emoji: '🐰', en: 'Rabbit', hi: 'खरगोश', hiSay: 'Khargosh' }, food: { emoji: '🥕', en: 'Carrot', hi: 'गाजर', hiSay: 'Gaajar' } },
-  { animal: { emoji: '🐄', en: 'Cow', hi: 'गाय', hiSay: 'Gaay' }, food: { emoji: '🌿', en: 'Grass', hi: 'घास', hiSay: 'Ghaas' } },
+  { animal: { emoji: '🐄', en: 'Cow', hi: 'गाय', hiSay: 'Gaay', g: 'f' }, food: { emoji: '🌿', en: 'Grass', hi: 'घास', hiSay: 'Ghaas' } },
   { animal: { emoji: '🐶', en: 'Dog', hi: 'कुत्ता', hiSay: 'Kutta' }, food: { emoji: '🦴', en: 'Bone', hi: 'हड्डी', hiSay: 'Haddi' } },
-  { animal: { emoji: '🐱', en: 'Cat', hi: 'बिल्ली', hiSay: 'Billi' }, food: { emoji: '🥛', en: 'Milk', hi: 'दूध', hiSay: 'Doodh' } },
+  { animal: { emoji: '🐱', en: 'Cat', hi: 'बिल्ली', hiSay: 'Billi', g: 'f' }, food: { emoji: '🥛', en: 'Milk', hi: 'दूध', hiSay: 'Doodh' } },
   { animal: { emoji: '🐘', en: 'Elephant', hi: 'हाथी', hiSay: 'Haathi' }, food: { emoji: '🍉', en: 'Watermelon', hi: 'तरबूज', hiSay: 'Tarbooj' } },
-  { animal: { emoji: '🐦', en: 'Bird', hi: 'चिड़िया', hiSay: 'Chidiya' }, food: { emoji: '🪱', en: 'Worm', hi: 'कीड़ा', hiSay: 'Keeda' } },
+  { animal: { emoji: '🐦', en: 'Bird', hi: 'चिड़िया', hiSay: 'Chidiya', g: 'f' }, food: { emoji: '🪱', en: 'Worm', hi: 'कीड़ा', hiSay: 'Keeda' } },
   { animal: { emoji: '🐸', en: 'Frog', hi: 'मेंढक', hiSay: 'Mendhak' }, food: { emoji: '🪰', en: 'Fly', hi: 'मक्खी', hiSay: 'Makkhi' } }
 ];
 
@@ -247,8 +253,8 @@ const feedGame = (() => {
     });
     sayPhrase(phrase(
       pair.animal.en + ' says: give me ' + pair.food.en.toLowerCase() + '!',
-      pair.animal.hi + ' बोला: मुझे ' + pair.food.hi + ' दो!',
-      pair.animal.hiSay + ' bola: mujhe ' + pair.food.hiSay + ' do!'
+      pair.animal.hi + ' ' + hiVerb(pair.animal, 'बोला', 'बोली') + ': मुझे ' + pair.food.hi + ' दो!',
+      pair.animal.hiSay + ' ' + hiVerb(pair.animal, 'bola', 'boli') + ': mujhe ' + pair.food.hiSay + ' do!'
     ));
   }
 
@@ -338,8 +344,8 @@ const trainGame = (() => {
       w.dataset.accept = state.groups[i].name.en;
       w.querySelector('.wagon-label').innerHTML = state.groups[i].label;
       w.querySelector('.wagon-items').innerHTML = '';
-      w.classList.remove('slide-off');
     });
+    track.classList.remove('going');
     const tray = $('train-tray');
     tray.innerHTML = '';
     const all = [];
@@ -383,10 +389,15 @@ const trainGame = (() => {
         starFly(wagon);
         confetti(12);
         sayPhrase(T.trainGo);
-        document.querySelectorAll('#train-track .wagon').forEach((w) => w.classList.add('slide-off'));
+        // Engine and wagons leave together, leftwards — the way 🚂 faces.
+        // The distance comes from the track itself, so nothing spills off-page.
+        const track = $('train-track');
+        track.style.setProperty('--train-go', '-' + (track.clientWidth + 80) + 'px');
+        track.classList.add('going');
         state.round++;
         dots();
         later(() => {
+          $('train-track').classList.remove('going');
           if (state.round >= 3) {
             celebrate({ again: () => { hideCelebrate(); start(); } });
           } else {
@@ -714,7 +725,7 @@ const LIFE_SEQUENCES = [
   {
     name: { en: 'Good Morning!', hi: 'सुप्रभात!' },
     stages: [
-      { emoji: '🛌', en: 'Wake up', hi: 'उठो', hiSay: 'Utho' },
+      { emoji: '⏰', en: 'Wake up', hi: 'उठो', hiSay: 'Utho' },
       { emoji: '🪥', en: 'Brush', hi: 'ब्रश करो', hiSay: 'Brush karo' },
       { emoji: '🛁', en: 'Bath', hi: 'नहाओ', hiSay: 'Nahao' },
       { emoji: '🏫', en: 'School', hi: 'स्कूल जाओ', hiSay: 'School jao' }

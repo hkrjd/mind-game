@@ -214,14 +214,16 @@ buildScreen('listen',
   '<button id="listen-start" class="big-btn" data-t="startBtn"></button>');
 
 function listenQuestion() {
-  const six = sample(PACK_BODY, 6);
+  // Only the parts a child can actually point at — not the heart or brain.
+  const six = sample(PACK_BODY.filter((b) => b.touch !== false), 6);
   const ans = six[0];
+  const apna = hiApna(ans);
   return {
     key: 'L' + ans.en,
     prompt: phrase(
       'Touch your ' + ans.en.toLowerCase() + '!',
-      'अपनी ' + ans.hi + ' छुओ!',
-      'Apni ' + ans.hiSay + ' chhuo!'),
+      apna + ' ' + ans.hi + ' छुओ!',
+      (hiG(ans) === 'f' ? 'Apni ' : 'Apna ') + ans.hiSay + ' chhuo!'),
     extra: '',
     choices: shuffle(six).map((it) => ({ key: it.en, html: '<span>' + it.emoji + '</span>' })),
     answer: ans.en,

@@ -103,7 +103,12 @@ const matraGame = (() => {
     const rom = c.rom + ans.rom;
     return {
       key: 'MT' + word,
-      prompt: phrase('Which one says ' + rom + '?', word + ' कौन सा है?', rom + ' kaunsa hai?'),
+      // The Hindi prompt used to print the answer itself; ask from the parts.
+      prompt: phrase(
+        'Which one says ' + rom + '?',
+        c.ch + ' और ' + ans.name + ' मिलकर क्या बनेगा?',
+        c.rom + ' aur ' + ans.rom + ' milkar kya banega?'
+      ),
       extra: '<div class="math-eq">' + c.ch + ' + ' + ans.name + ' = ?</div>',
       choices: shuffle(three).map((m) => ({ key: c.ch + m.sign, html: '<span class="akshar">' + c.ch + m.sign + '</span>' })),
       answer: word,

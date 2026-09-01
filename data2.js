@@ -37,18 +37,18 @@ const PACK_VEGGIES = [
 ];
 
 const PACK_BODY = [
-  { emoji: '👁️', en: 'Eye', hi: 'आँख', hiSay: 'Aankh' },
+  { emoji: '👁️', en: 'Eye', hi: 'आँख', hiSay: 'Aankh', g: 'f' },
   { emoji: '👂', en: 'Ear', hi: 'कान', hiSay: 'Kaan' },
-  { emoji: '👃', en: 'Nose', hi: 'नाक', hiSay: 'Naak' },
+  { emoji: '👃', en: 'Nose', hi: 'नाक', hiSay: 'Naak', g: 'f' },
   { emoji: '👄', en: 'Mouth', hi: 'मुँह', hiSay: 'Munh' },
-  { emoji: '🦷', en: 'Teeth', hi: 'दाँत', hiSay: 'Daant' },
-  { emoji: '👅', en: 'Tongue', hi: 'जीभ', hiSay: 'Jeebh' },
+  { emoji: '🦷', en: 'Teeth', hi: 'दाँत', hiSay: 'Daant', g: 'p' },
+  { emoji: '👅', en: 'Tongue', hi: 'जीभ', hiSay: 'Jeebh', g: 'f' },
   { emoji: '✋', en: 'Hand', hi: 'हाथ', hiSay: 'Haath' },
   { emoji: '🦶', en: 'Foot', hi: 'पैर', hiSay: 'Pair' },
-  { emoji: '🦵', en: 'Leg', hi: 'टाँग', hiSay: 'Taang' },
+  { emoji: '🦵', en: 'Leg', hi: 'टाँग', hiSay: 'Taang', g: 'f' },
   { emoji: '💪', en: 'Arm', hi: 'बाजू', hiSay: 'Baaju' },
-  { emoji: '❤️', en: 'Heart', hi: 'दिल', hiSay: 'Dil' },
-  { emoji: '🧠', en: 'Brain', hi: 'दिमाग', hiSay: 'Dimaag' }
+  { emoji: '❤️', en: 'Heart', hi: 'दिल', hiSay: 'Dil', touch: false },
+  { emoji: '🧠', en: 'Brain', hi: 'दिमाग', hiSay: 'Dimaag', touch: false }
 ];
 
 const PACK_OBJECTS = [
@@ -311,7 +311,7 @@ const VARNAMALA = [
   { ch: 'न', roman: 'Na', word: 'नल', wordSay: 'Nal', emoji: '🚰' },
   { ch: 'प', roman: 'Pa', word: 'पतंग', wordSay: 'Patang', emoji: '🪁' },
   { ch: 'फ', roman: 'Pha', word: 'फल', wordSay: 'Phal', emoji: '🍎' },
-  { ch: 'ब', roman: 'Ba', word: 'बतख', wordSay: 'Batakh', emoji: '🦆' },
+  { ch: 'ब', roman: 'Ba', word: 'बत्तख', wordSay: 'Batakh', emoji: '🦆' },
   { ch: 'भ', roman: 'Bha', word: 'भालू', wordSay: 'Bhaalu', emoji: '🐻' },
   { ch: 'म', roman: 'Ma', word: 'मछली', wordSay: 'Machhli', emoji: '🐟' },
   { ch: 'य', roman: 'Ya', word: 'यान', wordSay: 'Yaan', emoji: '🚀' },

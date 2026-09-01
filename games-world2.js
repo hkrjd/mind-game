@@ -32,9 +32,9 @@ const VEHICLES = [
   { emoji: '🚜', en: 'Tractor', hi: 'ट्रैक्टर', hiSay: 'Tractor', sEn: 'Phat phat!', sHi: 'फट फट!', sSay: 'Phat phat!' },
   { emoji: '⛵', en: 'Boat', hi: 'नाव', hiSay: 'Naav', sEn: 'Splash!', sHi: 'छप छप!', sSay: 'Chhap chhap!' },
   { emoji: '🚑', en: 'Ambulance', hi: 'एम्बुलेंस', hiSay: 'Ambulance', sEn: 'Ooo eee!', sHi: 'ऊँ ईं!', sSay: 'Ooo eee!' },
-  { emoji: '🚒', en: 'Fire engine', hi: 'दमकल', hiSay: 'Damkal', sEn: 'Ding ding!', sHi: 'डिंग डिंग!', sSay: 'Ding ding!' },
+  { emoji: '🚒', en: 'Fire engine', hi: 'दमकल', hiSay: 'Damkal', sEn: 'Tan tan tan!', sHi: 'टन टन टन!', sSay: 'Tan tan tan!' },
   { emoji: '🚁', en: 'Helicopter', hi: 'हेलीकॉप्टर', hiSay: 'Helicopter', sEn: 'Tak tak tak!', sHi: 'टक टक टक!', sSay: 'Tak tak tak!' },
-  { emoji: '🛵', en: 'Scooter', hi: 'स्कूटर', hiSay: 'Scooter', sEn: 'Vroom vroom!', sHi: 'वूम वूम!', sSay: 'Vroom vroom!' }
+  { emoji: '🛵', en: 'Scooter', hi: 'स्कूटर', hiSay: 'Scooter', sEn: 'Prr prr!', sHi: 'पर्र पर्र!', sSay: 'Prr prr!' }
 ];
 
 const vehiclesGame = (() => {
@@ -92,21 +92,21 @@ GAMES.vehicles = {
 GAME_TITLES.whereride = { en: 'Sky, Road, Water', hi: 'ज़मीन-पानी-आसमान', hiSay: 'Zameen paani aasmaan' };
 
 const RIDE_ZONES = [
-  { key: 'sky', emoji: '☁️', en: 'Sky', hi: 'आसमान', hiSay: 'Aasmaan' },
-  { key: 'road', emoji: '🛣️', en: 'Road', hi: 'ज़मीन', hiSay: 'Zameen' },
-  { key: 'water', emoji: '🌊', en: 'Water', hi: 'पानी', hiSay: 'Paani' }
+  { key: 'sky', emoji: '☁️', en: 'Sky', hi: 'आसमान', hiSay: 'Aasmaan', inEn: 'flies in the', hiPost: 'में', hiM: 'उड़ता', hiF: 'उड़ती', saM: 'udta', saF: 'udti' },
+  { key: 'road', emoji: '🛣️', en: 'Road', hi: 'ज़मीन', hiSay: 'Zameen', inEn: 'goes on the', hiPost: 'पर', hiM: 'चलता', hiF: 'चलती', saM: 'chalta', saF: 'chalti' },
+  { key: 'water', emoji: '🌊', en: 'Water', hi: 'पानी', hiSay: 'Paani', inEn: 'goes on the', hiPost: 'पर', hiM: 'चलता', hiF: 'चलती', saM: 'chalta', saF: 'chalti' }
 ];
 
 const RIDE_ITEMS = [
   { emoji: '✈️', zone: 'sky', en: 'Aeroplane', hi: 'हवाई जहाज़', hiSay: 'Hawai jahaz' },
   { emoji: '🚁', zone: 'sky', en: 'Helicopter', hi: 'हेलीकॉप्टर', hiSay: 'Helicopter' },
   { emoji: '🎈', zone: 'sky', en: 'Balloon', hi: 'गुब्बारा', hiSay: 'Gubbara' },
-  { emoji: '🚌', zone: 'road', en: 'Bus', hi: 'बस', hiSay: 'Bus' },
-  { emoji: '🚗', zone: 'road', en: 'Car', hi: 'गाड़ी', hiSay: 'Gaadi' },
-  { emoji: '🚲', zone: 'road', en: 'Cycle', hi: 'साइकिल', hiSay: 'Cycle' },
-  { emoji: '⛵', zone: 'water', en: 'Boat', hi: 'नाव', hiSay: 'Naav' },
-  { emoji: '🚤', zone: 'water', en: 'Speedboat', hi: 'मोटरबोट', hiSay: 'Motorboat' },
-  { emoji: '🛶', zone: 'water', en: 'Canoe', hi: 'डोंगी', hiSay: 'Dongi' }
+  { emoji: '🚌', zone: 'road', en: 'Bus', hi: 'बस', hiSay: 'Bus', g: 'f' },
+  { emoji: '🚗', zone: 'road', en: 'Car', hi: 'गाड़ी', hiSay: 'Gaadi', g: 'f' },
+  { emoji: '🚲', zone: 'road', en: 'Cycle', hi: 'साइकिल', hiSay: 'Cycle', g: 'f' },
+  { emoji: '⛵', zone: 'water', en: 'Boat', hi: 'नाव', hiSay: 'Naav', g: 'f' },
+  { emoji: '🚤', zone: 'water', en: 'Speedboat', hi: 'मोटरबोट', hiSay: 'Motorboat', g: 'f' },
+  { emoji: '🛶', zone: 'water', en: 'Canoe', hi: 'डोंगी', hiSay: 'Dongi', g: 'f' }
 ];
 
 const whererideGame = (() => {
@@ -171,10 +171,11 @@ const whererideGame = (() => {
     $('wr-tray').dataset.placed = String(state.placed);
     store.addStars(1);
     starFly(zoneEl);
+    const fem = hiG(sel.item) === 'f';
     sayPhrase(phrase(
-      'The ' + sel.item.en.toLowerCase() + ' goes on the ' + z.en.toLowerCase() + '!',
-      sel.item.hi + ' ' + z.hi + ' में चलती है!',
-      sel.item.hiSay + ' ' + z.hiSay + ' mein chalti hai!'
+      'The ' + sel.item.en.toLowerCase() + ' ' + z.inEn + ' ' + z.en.toLowerCase() + '!',
+      sel.item.hi + ' ' + z.hi + ' ' + z.hiPost + ' ' + (fem ? z.hiF : z.hiM) + ' है!',
+      sel.item.hiSay + ' ' + z.hiSay + ' ' + (z.hiPost === 'में' ? 'mein' : 'par') + ' ' + (fem ? z.saF : z.saM) + ' hai!'
     ));
     if (state.placed >= RIDE_ITEMS.length) {
       state.timer = later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
@@ -339,7 +340,7 @@ const dressGame = (() => {
       b.addEventListener('click', () => choose(b, item, r));
       box.appendChild(b);
     });
-    sayPhrase(phrase(r.wEn + ' — what will you wear?', r.wHi + ' — क्या पहनोगे?', r.wSay + ' — kya pehnoge?'));
+    sayPhrase(phrase(r.wEn + ' — what do you need?', r.wHi + ' — क्या चाहिए?', r.wSay + ' — kya chahiye?'));
   }
 
   function choose(btn, item, r) {
@@ -402,7 +403,7 @@ const TIDY_THINGS = [
   { emoji: '👕', bin: 'laundry', en: 'Shirt', hi: 'कमीज़', hiSay: 'Kameez' },
   { emoji: '🧦', bin: 'laundry', en: 'Socks', hi: 'मोज़े', hiSay: 'Moze' },
   { emoji: '👖', bin: 'laundry', en: 'Pants', hi: 'पैंट', hiSay: 'Pant' },
-  { emoji: '🪀', bin: 'toys', en: 'Yoyo', hi: 'लट्टू', hiSay: 'Lattu' },
+  { emoji: '🪀', bin: 'toys', en: 'Yo-yo', hi: 'यो-यो', hiSay: 'Yo-yo' },
   { emoji: '⚽', bin: 'toys', en: 'Ball', hi: 'गेंद', hiSay: 'Gend' },
   { emoji: '🧩', bin: 'toys', en: 'Puzzle', hi: 'पज़ल', hiSay: 'Puzzle' },
   { emoji: '📕', bin: 'shelf', en: 'Book', hi: 'किताब', hiSay: 'Kitab' },
@@ -528,9 +529,9 @@ const festivalsGame = (() => {
         sfx.pop();
         popIt(b);
         sayPhrase(phrase(
-          f.en + '! We use a ' + f.item.en + '!',
-          f.hi + '! इसमें ' + f.item.hi + ' होती है!',
-          f.hiSay + '! Isme ' + f.item.hiSay + ' hoti hai!'
+          f.en + '! At ' + f.en + ' we see the ' + f.item.en + '!',
+          f.hi + '! ' + f.hi + ' पर ' + f.item.hi + ' दिखता है!',
+          f.hiSay + '! ' + f.hiSay + ' par ' + f.item.hiSay + ' dikhta hai!'
         ));
       });
       grid.appendChild(b);
@@ -542,10 +543,11 @@ const festivalsGame = (() => {
     const ans = three[0];
     return {
       key: 'FS' + ans.en,
+      // Gender-free on both sides, so it reads right for a rakhi and for the moon.
       prompt: phrase(
-        'Which festival is the ' + ans.item.en + ' for?',
-        ans.item.hi + ' किस त्योहार की है?',
-        ans.item.hiSay + ' kis tyohaar ki hai?'
+        'Which festival is this from?',
+        'ये किस त्योहार से है?',
+        'Ye kis tyohaar se hai?'
       ),
       extra: '<div class="fest-item">' + ans.item.emoji + '</div>',
       choices: shuffle(three).map((f) => ({ key: f.en, html: '<span>' + f.emoji + '</span>' })),

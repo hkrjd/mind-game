@@ -1070,7 +1070,7 @@ const tablesGame = (() => {
     const b = 1 + Math.floor(Math.random() * 10);
     const prod = a * b;
     const opts = [prod];
-    [a * (b + 1), a * (b - 1), prod + a, prod - a, prod + 1].forEach((c) => {
+    [a * (b + 1), a * (b - 1), prod + a, prod - a, prod + 1, prod + 2, prod - 1, prod + a * 2].forEach((c) => {
       if (opts.length < 3 && c > 0 && c <= 120 && !opts.includes(c)) opts.push(c);
     });
     const line = prod + '! ' + tableLine(a, b) + '!';

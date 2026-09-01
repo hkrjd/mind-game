@@ -26,12 +26,12 @@ const FLOAT_SINK = [
   { emoji: '🍂', ans: 'float', en: 'Leaf', hi: 'पत्ता', hiSay: 'Patta' },
   { emoji: '🪨', ans: 'sink', en: 'Stone', hi: 'पत्थर', hiSay: 'Patthar' },
   { emoji: '🍎', ans: 'float', en: 'Apple', hi: 'सेब', hiSay: 'Seb' },
-  { emoji: '🔑', ans: 'sink', en: 'Key', hi: 'चाबी', hiSay: 'Chaabi' },
-  { emoji: '🏀', ans: 'float', en: 'Ball', hi: 'गेंद', hiSay: 'Gend' },
+  { emoji: '🔑', ans: 'sink', en: 'Key', hi: 'चाबी', hiSay: 'Chaabi', g: 'f' },
+  { emoji: '🏀', ans: 'float', en: 'Ball', hi: 'गेंद', hiSay: 'Gend', g: 'f' },
   { emoji: '🥄', ans: 'sink', en: 'Spoon', hi: 'चम्मच', hiSay: 'Chammach' },
-  { emoji: '🦆', ans: 'float', en: 'Duck', hi: 'बत्तख', hiSay: 'Batakh' },
+  { emoji: '🦆', ans: 'float', en: 'Duck', hi: 'बत्तख', hiSay: 'Batakh', g: 'f' },
   { emoji: '🪙', ans: 'sink', en: 'Coin', hi: 'सिक्का', hiSay: 'Sikka' },
-  { emoji: '🧊', ans: 'float', en: 'Ice', hi: 'बर्फ़', hiSay: 'Barf' },
+  { emoji: '🧊', ans: 'float', en: 'Ice', hi: 'बर्फ़', hiSay: 'Barf', g: 'f' },
   { emoji: '⚓', ans: 'sink', en: 'Anchor', hi: 'लंगर', hiSay: 'Langar' }
 ];
 
@@ -86,8 +86,10 @@ const floatsinkGame = (() => {
       sfx.wrong();
     }
     const truth = it.ans === 'float'
-      ? phrase(it.en + ' floats!', it.hi + ' तैरता है!', it.hiSay + ' tairta hai!')
-      : phrase(it.en + ' sinks!', it.hi + ' डूब जाता है!', it.hiSay + ' doob jata hai!');
+      ? phrase(it.en + ' floats!', it.hi + ' ' + hiVerb(it, 'तैरता', 'तैरती') + ' है!',
+        it.hiSay + ' ' + hiVerb(it, 'tairta', 'tairti') + ' hai!')
+      : phrase(it.en + ' sinks!', it.hi + ' ' + hiVerb(it, 'डूब जाता', 'डूब जाती') + ' है!',
+        it.hiSay + ' ' + hiVerb(it, 'doob jata', 'doob jati') + ' hai!');
     sayPhrase(right ? joinPhrase(rand(PRAISE), truth) : joinPhrase(phrase('Look!', 'देखो!', 'Dekho!'), truth));
     state.i++;
     dots();
@@ -123,18 +125,18 @@ GAME_TITLES.homes = { en: 'Animal Homes', hi: 'जानवर के घर', h
 const HOME_TARGETS = [
   { key: 'nest', emoji: '🪺', en: 'Nest', hi: 'घोंसला', hiSay: 'Ghosla' },
   { key: 'burrow', emoji: '🕳️', en: 'Burrow', hi: 'बिल', hiSay: 'Bil' },
-  { key: 'kennel', emoji: '🏠', en: 'Kennel', hi: 'घर', hiSay: 'Ghar' },
+  { key: 'kennel', emoji: '🏠', en: 'House', hi: 'घर', hiSay: 'Ghar' },
   { key: 'water', emoji: '💧', en: 'Water', hi: 'पानी', hiSay: 'Paani' }
 ];
 
 const HOME_ANIMALS = [
-  { emoji: '🐦', home: 'nest', en: 'Bird', hi: 'चिड़िया', hiSay: 'Chidiya' },
+  { emoji: '🐦', home: 'nest', en: 'Bird', hi: 'चिड़िया', hiSay: 'Chidiya', g: 'f' },
   { emoji: '🦉', home: 'nest', en: 'Owl', hi: 'उल्लू', hiSay: 'Ullu' },
   { emoji: '🐭', home: 'burrow', en: 'Mouse', hi: 'चूहा', hiSay: 'Chooha' },
-  { emoji: '🐜', home: 'burrow', en: 'Ant', hi: 'चींटी', hiSay: 'Cheenti' },
+  { emoji: '🐜', home: 'burrow', en: 'Ant', hi: 'चींटी', hiSay: 'Cheenti', g: 'f' },
   { emoji: '🐶', home: 'kennel', en: 'Dog', hi: 'कुत्ता', hiSay: 'Kutta' },
-  { emoji: '🐱', home: 'kennel', en: 'Cat', hi: 'बिल्ली', hiSay: 'Billi' },
-  { emoji: '🐟', home: 'water', en: 'Fish', hi: 'मछली', hiSay: 'Machhli' },
+  { emoji: '🐱', home: 'kennel', en: 'Cat', hi: 'बिल्ली', hiSay: 'Billi', g: 'f' },
+  { emoji: '🐟', home: 'water', en: 'Fish', hi: 'मछली', hiSay: 'Machhli', g: 'f' },
   { emoji: '🐢', home: 'water', en: 'Turtle', hi: 'कछुआ', hiSay: 'Kachhua' }
 ];
 
@@ -203,8 +205,8 @@ const homesGame = (() => {
     starFly(target);
     sayPhrase(phrase(
       sel.animal.en + ' lives in the ' + h.en.toLowerCase() + '!',
-      sel.animal.hi + ' ' + h.hi + ' में रहती है!',
-      sel.animal.hiSay + ' ' + h.hiSay + ' mein rehti hai!'
+      sel.animal.hi + ' ' + h.hi + ' में ' + hiVerb(sel.animal, 'रहता', 'रहती') + ' है!',
+      sel.animal.hiSay + ' ' + h.hiSay + ' mein ' + hiVerb(sel.animal, 'rehta', 'rehti') + ' hai!'
     ));
     if (state.placed >= HOME_ANIMALS.length) {
       state.timer = later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
@@ -228,7 +230,7 @@ GAME_TITLES.babies = { en: 'Animal Babies', hi: 'जानवर के बच�
 const BABY_PAIRS = [
   { key: 'hen', mom: '🐔', baby: '🐤', mEn: 'Hen', mHi: 'मुर्गी', mSay: 'Murgi', bEn: 'Chick', bHi: 'चूज़ा', bSay: 'Chooza' },
   { key: 'cow', mom: '🐄', baby: '🐮', mEn: 'Cow', mHi: 'गाय', mSay: 'Gaay', bEn: 'Calf', bHi: 'बछड़ा', bSay: 'Bachhda' },
-  { key: 'dog', mom: '🐕', baby: '🐶', mEn: 'Dog', mHi: 'कुत्ता', mSay: 'Kutta', bEn: 'Puppy', bHi: 'पिल्ला', bSay: 'Pilla' },
+  { key: 'dog', mom: '🐕', baby: '🐶', mEn: 'Dog', mHi: 'कुत्ता', mObl: 'कुत्ते', mSay: 'Kutta', mSayObl: 'Kutte', bEn: 'Puppy', bHi: 'पिल्ला', bSay: 'Pilla' },
   { key: 'cat', mom: '🐈', baby: '🐱', mEn: 'Cat', mHi: 'बिल्ली', mSay: 'Billi', bEn: 'Kitten', bHi: 'बिल्ली का बच्चा', bSay: 'Billi ka bachcha' },
   { key: 'duck', mom: '🦆', baby: '🐥', mEn: 'Duck', mHi: 'बत्तख', mSay: 'Batakh', bEn: 'Duckling', bHi: 'बत्तख का बच्चा', bSay: 'Batakh ka bachcha' },
   { key: 'butterfly', mom: '🦋', baby: '🐛', mEn: 'Butterfly', mHi: 'तितली', mSay: 'Titli', bEn: 'Caterpillar', bHi: 'इल्ली', bSay: 'Illi' }
@@ -259,7 +261,10 @@ const babiesGame = (() => {
       const m = document.createElement('button');
       m.className = 'tile baby-tile mom-tile';
       m.dataset.pair = p.key;
-      m.innerHTML = '<span class="t-big">' + p.mom + '</span><span class="t-word">' + p.mHi + '</span>';
+      m.dataset.en = p.mEn;
+      m.dataset.hi = p.mHi;
+      m.innerHTML = '<span class="t-big">' + p.mom + '</span><span class="t-word">' +
+        (store.getLang() === 'hi' ? p.mHi : p.mEn) + '</span>';
       m.addEventListener('click', () => {
         if (m.classList.contains('matched')) return;
         sfx.pop();
@@ -274,7 +279,10 @@ const babiesGame = (() => {
       const k = document.createElement('button');
       k.className = 'tile baby-tile kid-tile';
       k.dataset.pair = p.key;
-      k.innerHTML = '<span class="t-big">' + p.baby + '</span><span class="t-word">' + p.bHi + '</span>';
+      k.dataset.en = p.bEn;
+      k.dataset.hi = p.bHi;
+      k.innerHTML = '<span class="t-big">' + p.baby + '</span><span class="t-word">' +
+        (store.getLang() === 'hi' ? p.bHi : p.bEn) + '</span>';
       k.addEventListener('click', () => match(k, p));
       kids.appendChild(k);
     });
@@ -300,8 +308,8 @@ const babiesGame = (() => {
     starFly(kid);
     sayPhrase(phrase(
       'The baby ' + p.mEn.toLowerCase() + ' is a ' + p.bEn.toLowerCase() + '!',
-      p.mHi + ' का बच्चा — ' + p.bHi + '!',
-      p.mSay + ' ka bachcha — ' + p.bSay + '!'
+      (p.mObl || p.mHi) + ' का बच्चा — ' + p.bHi + '!',
+      (p.mSayObl || p.mSay) + ' ka bachcha — ' + p.bSay + '!'
     ));
     if (state.matched < state.need) return;
     state.round++;
@@ -311,15 +319,23 @@ const babiesGame = (() => {
     }, 2000);
   }
 
+  function relabel() {
+    const hi = store.getLang() === 'hi';
+    document.querySelectorAll('#babies-area .baby-tile').forEach((el) => {
+      const w = el.querySelector('.t-word');
+      if (w) w.textContent = hi ? el.dataset.hi : el.dataset.en;
+    });
+  }
+
   function start() { state.round = 0; newRound(); }
   function stop() { clearTimeout(state.timer); }
 
-  return { start, stop };
+  return { start, stop, relabel };
 })();
 
 GAMES.babies = {
   emoji: '🐤', color: 'var(--sunny)', screen: 'screen-babies',
-  enter() { babiesGame.start(); }, onLeave() { babiesGame.stop(); }
+  enter() { babiesGame.start(); }, onLang() { babiesGame.relabel(); }, onLeave() { babiesGame.stop(); }
 };
 
 /* ================= Rang Milao (colour mixing) ================= */
@@ -342,7 +358,7 @@ const MIX_RULES = [
   { a: 'red', b: 'white', hex: '#F48FB1', en: 'Pink', hi: 'गुलाबी', hiSay: 'Gulabi', star: true },
   { a: 'blue', b: 'white', hex: '#90CAF9', en: 'Sky blue', hi: 'आसमानी', hiSay: 'Aasmani', star: true },
   { a: 'black', b: 'white', hex: '#9E9E9E', en: 'Grey', hi: 'स्लेटी', hiSay: 'Slaty', star: true },
-  { a: 'red', b: 'black', hex: '#6D4C41', en: 'Brown', hi: 'भूरा', hiSay: 'Bhoora' },
+  { a: 'red', b: 'black', hex: '#7B1E22', en: 'Maroon', hi: 'गहरा लाल', hiSay: 'Gehra laal' },
   { a: 'yellow', b: 'white', hex: '#FFF59D', en: 'Light yellow', hi: 'हल्का पीला', hiSay: 'Halka peela' },
   { a: 'yellow', b: 'black', hex: '#827717', en: 'Olive', hi: 'मेहँदी', hiSay: 'Mehndi' },
   { a: 'blue', b: 'black', hex: '#0D47A1', en: 'Dark blue', hi: 'गहरा नीला', hiSay: 'Gehra neela' }

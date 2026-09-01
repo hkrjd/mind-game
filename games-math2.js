@@ -304,6 +304,22 @@ const MEASURE_ITEMS = [
 
 const BLOCK_PX = 40;
 
+// Draw the thing exactly as tall as the finished tower. Emoji glyphs fill
+// different fractions of their em box in different fonts, so the ink is
+// measured rather than guessed from font-size.
+function fitToBlocks(el, emoji, blocks) {
+  const target = blocks * BLOCK_PX - 2; // the stack: N blocks of 38px + 2px gaps
+  let size = target;
+  try {
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = '100px ' + (getComputedStyle(el).fontFamily || 'sans-serif');
+    const m = ctx.measureText(emoji);
+    const ink = (m.actualBoundingBoxAscent || 0) + (m.actualBoundingBoxDescent || 0);
+    if (ink > 10) size = Math.round((target * 100) / ink);
+  } catch (e) { /* fall back to the plain size */ }
+  el.style.fontSize = size + 'px';
+}
+
 const measureGame = (() => {
   buildScreen('measure',
     '<p class="hint" data-t="measureHint"></p>' +
@@ -329,7 +345,7 @@ const measureGame = (() => {
     area.dataset.blocks = '0';
     const obj = $('meas-obj');
     obj.textContent = it.emoji;
-    obj.style.fontSize = (it.need * BLOCK_PX * 0.92) + 'px';
+    fitToBlocks(obj, it.emoji, it.need);
     $('meas-stack').innerHTML = '';
     sayPhrase(phrase(
       'How many blocks tall is the ' + it.en.toLowerCase() + '?',

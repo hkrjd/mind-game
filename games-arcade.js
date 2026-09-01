@@ -41,7 +41,9 @@ const skypopGame = (() => {
     const el = document.createElement('button');
     el.className = 'bubble bubble-c' + (state.hue++ % 5);
     el.textContent = label;
-    el.style.left = (4 + Math.random() * 78) + '%';
+    // Leave room for the bubble's own width, or the right-hand ones get clipped.
+    const free = Math.max(10, area.clientWidth - 78 - 12);
+    el.style.left = Math.round(6 + Math.random() * free) + 'px';
     area.appendChild(el);
     const b = { el, label, y: -90, speed: 42 + Math.random() * 40 };
     el.addEventListener('click', () => tap(b));
@@ -305,9 +307,17 @@ const towerGame = (() => {
   const BLOCK_W = 110;
   const BLOCK_H = 32;
   const GOAL = 10;
-  const state = { floors: 0, lastX: null, x: 0, dir: 1, speed: 170, raf: 0, running: false, dropping: false, prevTs: 0 };
+  const state = { floors: 0, lastX: null, x: 0, dir: 1, speed: 170, raf: 0, running: false, dropping: false, prevTs: 0, bh: BLOCK_H };
 
   function areaW() { return $('tower-area').clientWidth; }
+
+  // A block is as tall as the scene can afford: the finished tower plus the
+  // block still hovering above it has to fit, even in landscape.
+  function fitBlockHeight() {
+    const areaH = $('tower-area').clientHeight || 430;
+    state.bh = Math.max(16, Math.min(BLOCK_H, Math.floor((areaH - 56) / (GOAL + 1))));
+    $('tower-area').style.setProperty('--tower-bh', state.bh + 'px');
+  }
 
   function loop(ts) {
     if (!state.running) return;
@@ -327,9 +337,9 @@ const towerGame = (() => {
     if (state.dropping || !state.running || state.floors >= GOAL) return;
     state.dropping = true;
     const mover = $('tower-mover');
-    const targetBottom = state.floors * BLOCK_H;
+    const targetBottom = state.floors * state.bh;
     const areaH = $('tower-area').clientHeight;
-    const fallTo = areaH - targetBottom - BLOCK_H - 8;
+    const fallTo = Math.max(12, areaH - targetBottom - state.bh - 8);
     mover.style.transition = 'top .32s cubic-bezier(.4,0,1,1)';
     mover.style.top = fallTo + 'px';
     later(() => {
@@ -369,6 +379,7 @@ const towerGame = (() => {
 
   function start() {
     $('tower-stage').innerHTML = '';
+    fitBlockHeight();
     state.floors = 0;
     state.lastX = null;
     state.x = 0;
@@ -1012,7 +1023,9 @@ const farmGame = (() => {
     catchMode.henX += catchMode.henDir * 90 * dt;
     if (catchMode.henX < 34) { catchMode.henX = 34; catchMode.henDir = 1; }
     if (catchMode.henX > w - 34) { catchMode.henX = w - 34; catchMode.henDir = -1; }
+    // She is drawn facing right, so mirror her only when she walks left.
     $('fc-hen').style.left = (catchMode.henX - 22) + 'px';
+    $('fc-hen').style.transform = 'scaleX(' + catchMode.henDir + ')';
     // eggs fall
     catchMode.eggs.slice().forEach((egg) => {
       egg.y += egg.vy * dt;

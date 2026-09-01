@@ -82,7 +82,7 @@ const ANIMALS = [
   { emoji: '🐘', en: 'Elephant', hi: 'हाथी', hiSay: 'Haathi', soundEn: 'Toot toot!', soundHi: 'पौं पौं!', soundHiSay: 'Pon pon!' },
   { emoji: '🐵', en: 'Monkey', hi: 'बंदर', hiSay: 'Bandar', soundEn: 'Oo oo aa aa!', soundHi: 'ऊ ऊ आ आ!', soundHiSay: 'Oo oo aa aa!' },
   { emoji: '🐴', en: 'Horse', hi: 'घोड़ा', hiSay: 'Ghoda', soundEn: 'Neigh neigh!', soundHi: 'हिन हिन!', soundHiSay: 'Hin hin!' },
-  { emoji: '🦆', en: 'Duck', hi: 'बतख', hiSay: 'Batakh', soundEn: 'Quack quack!', soundHi: 'क्वैक क्वैक!', soundHiSay: 'Quack quack!' },
+  { emoji: '🦆', en: 'Duck', hi: 'बत्तख', hiSay: 'Batakh', g: 'f', soundEn: 'Quack quack!', soundHi: 'क्वैक क्वैक!', soundHiSay: 'Quack quack!' },
   { emoji: '🐑', en: 'Sheep', hi: 'भेड़', hiSay: 'Bhed', soundEn: 'Baa baa!', soundHi: 'मैं मैं!', soundHiSay: 'Main main!' },
   { emoji: '🐸', en: 'Frog', hi: 'मेंढक', hiSay: 'Mendhak', soundEn: 'Ribbit ribbit!', soundHi: 'टर्र टर्र!', soundHiSay: 'Tarr tarr!' },
   { emoji: '🐦', en: 'Bird', hi: 'चिड़िया', hiSay: 'Chidiya', soundEn: 'Tweet tweet!', soundHi: 'चूँ चूँ!', soundHiSay: 'Choon choon!' },
@@ -167,6 +167,15 @@ const joinPhrase = (a, b) => ({
   hiSay: (a.hiSay || a.en) + ' ' + (b.hiSay || b.en)
 });
 const wordPhrase = (item) => phrase(item.en + '!', item.hi + '!', item.hiSay + '!');
+
+/* Hindi verbs and possessives agree with the noun, so data items carry
+   g: 'f' (feminine), 'p' (plural) or nothing (masculine). Sentences are
+   built through these instead of hard-coding one gender. */
+const hiG = (item) => (item && item.g) || 'm';
+// "रहता है" / "रहती है"
+const hiVerb = (item, masc, fem) => (hiG(item) === 'f' ? fem : masc);
+// "अपना हाथ" / "अपनी नाक" / "अपने दाँत"
+const hiApna = (item) => (hiG(item) === 'f' ? 'अपनी' : hiG(item) === 'p' ? 'अपने' : 'अपना');
 
 let REDUCED = false;
 try {
@@ -816,9 +825,10 @@ const quiz = {
     box.dataset.answer = q.answer;
     box.dataset.qnum = String(this.count + 1);
     box.innerHTML = '';
-    // Fewer choices make every quiz in the app easier, in one place.
+    // Fewer choices make every quiz in the app easier, in one place — but a
+    // question can insist on a floor (two things cannot show an "odd one out").
     let choices = q.choices;
-    const want = lvl(2, 3, 4);
+    const want = Math.max(lvl(2, 3, 4), q.min || 2);
     if (choices.length > want) {
       const right = choices.filter((c) => c.key === q.answer);
       const wrong = shuffle(choices.filter((c) => c.key !== q.answer)).slice(0, Math.max(1, want - right.length));
@@ -948,7 +958,13 @@ const abcGame = {
   },
 
   varnaQuestion() {
-    const three = sample(VARNAMALA, 3);
+    // Several letters share a romanization (ट and त are both "Ta"), so the
+    // English prompt "Find Ta!" would have two right answers. Keep the
+    // spellings natural and just never show two of them together.
+    let three = sample(VARNAMALA, 3);
+    for (let i = 0; i < 20 && new Set(three.map((v) => v.roman)).size < 3; i++) {
+      three = sample(VARNAMALA, 3);
+    }
     const ans = three[0];
     return {
       key: 'V' + ans.ch,

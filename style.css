@@ -203,6 +203,9 @@ button {
 /* ============ Tabs (ABC / 123) ============ */
 .tabs {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
   gap: 10px;
   background: rgba(255,255,255,.6);
   border-radius: 999px;
@@ -816,7 +819,9 @@ button {
 #tower-mover, .tower-block {
   position: absolute;
   width: 110px;
-  height: 32px;
+  /* Set per game from the area's real height, so ten floors always fit —
+     a landscape phone gives the scene only 300px. */
+  height: var(--tower-bh, 32px);
   border-radius: 8px;
   box-shadow: inset 0 -5px 0 rgba(0, 0, 0, .16);
 }
@@ -878,7 +883,7 @@ button {
   pointer-events: none;
 }
 .pot { display: flex; flex-direction: column; align-items: center; }
-.plant { font-size: 2.5rem; min-height: 56px; line-height: 56px; }
+.plant { font-size: 2.5rem; min-height: 44px; line-height: 44px; margin-bottom: -4px; }
 .pot-base { font-size: 2rem; }
 #garden-ground {
   position: absolute;
@@ -1141,7 +1146,7 @@ button {
   position: absolute;
   top: 8px;
   font-size: 2.6rem;
-  transform: scaleX(-1);
+  transform: scaleX(1);
   pointer-events: none;
 }
 .fc-egg {
@@ -1459,8 +1464,13 @@ button {
   justify-content: center;
   border-bottom: 6px solid #8D6E63;
   padding-bottom: 6px;
+  /* The train leaves through the left edge of its own track, so it can never
+     make the page itself scrollable sideways. */
+  overflow: hidden;
 }
-#train-engine { font-size: 3rem; }
+#train-engine { font-size: 3rem; transition: transform .8s ease; }
+#train-track.going #train-engine,
+#train-track.going .wagon { transform: translateX(var(--train-go, -640px)); }
 .wagon {
   background: var(--card);
   border-radius: 14px 14px 6px 6px;
@@ -1481,7 +1491,6 @@ button {
 .wagon-items { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; min-height: 30px; }
 .wagon-mini { font-size: 1.1rem; }
 .wagon-mini .shape { width: 22px; height: 22px; }
-.wagon.slide-off { transform: translateX(120vw); }
 #train-tray { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 560px; }
 .train-item { width: 76px; min-height: 76px; font-size: 1.9rem; }
 .train-item .shape { width: 46px; height: 46px; }
@@ -1722,7 +1731,7 @@ button {
   z-index: 2;
   transition: top .9s ease-in;
 }
-#fs-item.float { top: 33%; }
+#fs-item.float { top: 27%; }
 #fs-item.sink { top: 76%; }
 #fs-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 
@@ -1927,7 +1936,7 @@ button {
 /* ---- Katori Khel ---- */
 #cups-row {
   position: relative;
-  width: 372px;
+  width: min(96vw, 372px);
   height: 176px;
   margin-top: 10px;
 }

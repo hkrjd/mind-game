@@ -231,7 +231,7 @@ const cupsGame = (() => {
     '<div id="cups-dots" class="dots-row"></div>' +
     '<div id="cups-row" data-ball="" data-phase="show"></div>');
 
-  const SLOT_W = 124;
+  const CUP_W = 116;
   const state = { round: 0, cups: [], ball: null, phase: 'show', timeouts: [] };
 
   function tmo(fn, ms) {
@@ -246,8 +246,15 @@ const cupsGame = (() => {
 
   function dots() { renderDots('cups-dots', 5, state.round); }
 
+  // Spacing comes from the row's real width, so the third bowl is always
+  // on screen and tappable, even on a 360px phone.
+  function slotW() {
+    const row = $('cups-row');
+    return Math.max(CUP_W + 4, Math.min(124, (row.clientWidth - CUP_W) / 2));
+  }
+
   function place(cup) {
-    cup.el.style.transform = 'translateX(' + (cup.slot * SLOT_W) + 'px)';
+    cup.el.style.transform = 'translateX(' + Math.round(cup.slot * slotW()) + 'px)';
   }
 
   function build() {
