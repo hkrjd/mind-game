@@ -3,7 +3,7 @@
 A learning game for little kids (around age 5) that teaches through play — in **Hindi and English together**.
 छोटे बच्चों (लगभग 5 साल) के लिए एक गेम जो खेल-खेल में सिखाता है — **हिंदी और English दोनों में**।
 
-No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **75 games** in one app.
+No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **79 games** in one app.
 
 ## 🎮 The games / गेम्स
 
@@ -103,8 +103,16 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🎹 **Baja / बाजा** | Seven coloured keys: Sa Re Ga Ma Pa Dha Ni |
 | 🎶 **Copy the Tune / धुन कॉपी** | Hear a little tune, then play it back note for note |
 | 🥁 **Keep the Beat / ताल** | Dhol, tabla, manjira — hear the rhythm and echo it |
-| 🎵 **Rhymes / कविताएँ** | Twinkle Twinkle, Baa Baa Black Sheep, मछली जल की रानी, चंदा मामा |
+| 🎵 **Rhymes / कविताएँ** | Twinkle Twinkle, Baa Baa Black Sheep, Incy Wincy Spider, मछली जल की रानी, चंदा मामा |
 | 🏆 **Sticker Book / स्टिकर बुक** | Every 25 ⭐ unlocks one of 40 stickers for the shelf — tap the star counter to open it |
+
+### 🕷️ Spider Hero / मकड़ी हीरो
+| Game | What the child learns |
+|---|---|
+| 🕸️ **Make a Web / जाला बनाओ** | Join the dots in order and a web spins itself — numbers, ABC or क ख ग |
+| 🕷️ **How Many Legs / कितने पैर** | A spider has eight, an ant six, a snake none — counting and a real fact |
+| 🧗 **Spider on a Thread / धागे पर मकड़ी** | Walk the spider up 1→10, then back down 10→1; on hard it counts in twos |
+| 🦸 **Hero Suit / हीरो की पोशाक** | Half the suit is coloured — mirror the pattern onto the other half |
 
 Everything is spoken aloud, so the child does not need to read. Right answers earn ⭐ stars (saved on the device) with confetti; wrong answers just get a gentle wiggle and "फिर से कोशिश करो!" — no timers, no losing.
 
@@ -119,7 +127,7 @@ The whole app also works with a screen reader or a keyboard: every answer tile h
 
 ### 🏠 Finding a game
 
-Home is one screen, not a wall of 75 cards:
+Home is one screen, not a wall of 79 cards:
 
 - **🎯 Today's game** — one suggested game a day, picked from the ones the child has played least, so the games at the bottom of the list get a turn too.
 - **⏮️ Just played** — the last six games, one tap away.
@@ -131,7 +139,7 @@ Home is one screen, not a wall of 75 cards:
 The **👪 Parent Corner** button at the bottom of home shows:
 
 - how many minutes were played on each of the last 7 days,
-- total ⭐, stickers unlocked, day streak, and how many of the 75 games have been tried,
+- total ⭐, stickers unlocked, day streak, and how many of the 79 games have been tried,
 - the games played most — and a rotating list of ones **not tried yet**, to suggest something new,
 - a **daily play limit** (off / 15 / 30 / 45 min). When it is reached the app shows a friendly "time for a break" message — it is a nudge, not a lock,
 - **how hard it should be** — 🐣 Easy, 🙂 Normal or 🦁 Hard. This changes how many answers a quiz offers (2 / 3 / 4), how long a round is, how big the numbers get in the maths games, the size of the mazes, the number of memory pairs, and the length of the tunes to copy,
@@ -167,7 +175,7 @@ A minute later the game is live at `https://<your-username>.github.io/mind-game/
 ## 🛠️ Tech notes
 
 - Zero-build vanilla HTML/CSS/JS — no frameworks, no assets: emoji for pictures, SVG/canvas for shapes and puzzles, Web Speech API for voices, Web Audio API for jingles.
-- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `games-read.js`, `games-math2.js`, `games-nature.js`, `games-world2.js`, `games-fun2.js`, `games-music.js`, `parent.js` (parent corner), `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
+- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `games-read.js`, `games-math2.js`, `games-nature.js`, `games-world2.js`, `games-fun2.js`, `games-music.js`, `games-hero.js`, `parent.js` (parent corner), `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
 - Works fully offline: from `file://` directly, and as an installed PWA via the service worker. Degrades gracefully when speech/audio/localStorage are unavailable.
 - Shared helpers keep the games small: `quiz` (the question engine), `renderDots`, `nope` (the wrong-answer reaction), `later` (a timeout that is cancelled the moment the child leaves the screen), `lvl(easy, normal, hard)` for difficulty, and the `makeVocabPack` and `makeEcho` factories.
 - **When deploying an update, bump `VERSION` in `sw.js`** so installed apps fetch the new files.

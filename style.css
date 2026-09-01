@@ -2143,3 +2143,96 @@ button {
 }
 #pc-reset.armed { background: var(--coral); color: #fff; box-shadow: var(--shadow-sm); }
 .pc-note { font-size: .85rem; margin-top: 8px; text-align: left; }
+
+/* ============ Spider Hero pack ============ */
+
+/* The web keeps its own 360-unit space; the dots are placed in percentages,
+   so nothing here has to be measured and rotation costs nothing. */
+#web-area {
+  position: relative;
+  width: min(80vw, 360px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #FFFFFF, #F3EDFF);
+  box-shadow: var(--shadow-sm);
+}
+#web-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.web-spoke { stroke: #E3D9F2; stroke-width: 3; }
+.web-thread { stroke: var(--lilac); stroke-width: 6; stroke-linecap: round; }
+.web-dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  transition: background .15s, color .15s;
+}
+.web-dot.on { background: var(--lilac); color: #fff; }
+#web-prize {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  pointer-events: none;
+}
+
+.legs-big { font-size: 4.4rem; line-height: 1.1; }
+
+/* Rungs sit in normal flow: no fixed height, so a short screen just scrolls. */
+#thread-area {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(92vw, 320px);
+  padding: 10px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #EDE7F6, #FFFFFF 60%);
+  box-shadow: var(--shadow-sm);
+}
+#thread-top { text-align: center; font-size: 1.7rem; line-height: 1.1; }
+.rung {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 4px 14px;
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.rung-perch { width: 32px; font-size: 1.4rem; line-height: 1; text-align: left; }
+.rung.on { background: var(--sunny); }
+
+#suit-grid {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+.suit-cell {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #F3EDE3;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .10);
+}
+/* A dashed edge marks the squares that are the child's to fill, and a coloured
+   spine marks the fold the pattern has to be mirrored across. */
+.suit-cell[data-side="right"][data-color="-1"] { outline: 2px dashed #D8CFC2; outline-offset: -5px; }
+.suit-cell[data-side="right"][data-c="0"] {
+  box-shadow: inset 5px 0 0 var(--lilac), inset 0 -3px 0 rgba(0, 0, 0, .10);
+}
+.suit-cell.fixed { cursor: default; }
+.suit-chip .mini-blob { width: 40px; height: 40px; display: inline-block; }

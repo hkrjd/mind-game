@@ -135,6 +135,16 @@ const RHYMES = [
     ]
   },
   {
+    id: 'incy', lang: 'en', emoji: '🕷️',
+    title: { en: 'Incy Wincy Spider', hi: 'इंसी विंसी स्पाइडर' },
+    lines: [
+      'Incy Wincy spider climbed up the water spout,',
+      'Down came the rain and washed the spider out,',
+      'Out came the sunshine and dried up all the rain,',
+      'So Incy Wincy spider climbed up the spout again.'
+    ]
+  },
+  {
     id: 'machhli', lang: 'hi', emoji: '🐟',
     title: { en: 'Machhli Jal Ki Rani', hi: 'मछली जल की रानी' },
     lines: [

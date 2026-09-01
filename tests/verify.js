@@ -62,10 +62,10 @@ function ok(cond, msg) {
   await page.goto('file://' + path.join(ROOT, 'index.html'));
   ok(await page.locator('#lang-pick.show').count() === 1, 'a fresh install asks which language to use');
   await startApp();
-  ok(await page.locator('#cat-tiles .cat-tile').count() === 6, 'home shows 6 category shelves');
+  ok(await page.locator('#cat-tiles .cat-tile').count() === 7, 'home shows 7 category shelves');
   const totalGames = await page.evaluate(() =>
     HOME_SECTIONS.reduce((a, s) => a + s.games.filter((g) => GAMES[g]).length, 0));
-  ok(totalGames === 75, 'the shelves hold all 75 games');
+  ok(totalGames === 79, 'the shelves hold all 79 games');
   const homeH = await page.evaluate(() => document.documentElement.scrollHeight);
   ok(homeH < 2000, 'home fits in about one screen (' + homeH + 'px, was ~6600px)');
   await shot('01-home.png');

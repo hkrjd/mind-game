@@ -60,7 +60,7 @@ function ok(cond, msg) {
   await page.waitForSelector('#home-grid');
   if (await page.locator('#lang-pick.show').count()) await page.click('#lp-en');
   await page.waitForSelector('#cat-tiles .cat-tile');
-  ok(await page.locator('#cat-tiles .cat-tile').count() === 6, 'home shows 6 category shelves');
+  ok(await page.locator('#cat-tiles .cat-tile').count() === 7, 'home shows 7 category shelves');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -245,7 +245,7 @@ function ok(cond, msg) {
 
   console.log('# rhymes');
   await openGame('rhymes');
-  ok(await page.locator('#rhymes-list .rhyme-card').count() === 4, '4 rhymes listed');
+  ok(await page.locator('#rhymes-list .rhyme-card').count() === 5, '5 rhymes listed');
   await page.click('#rhymes-list .rhyme-card[data-rhyme="machhli"]');
   await page.waitForSelector('#rhyme-view:not([hidden])');
   await page.click('#rhyme-lines .rline:nth-child(1)');
@@ -1293,6 +1293,105 @@ function ok(cond, msg) {
   await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2', null, { timeout: 15000 });
   ok(true, 'what-comes-before moves on to the next question');
   await shot('51-before20.png');
+  await home();
+
+  console.log('# spider hero pack');
+
+  await openGame('webdots');
+  ok(await page.locator('#web-area .web-dot').count() === 8, 'the web offers eight dots to join');
+  // A dot out of turn must change nothing at all.
+  await page.click('#web-area .web-dot[data-n="3"]');
+  ok(await page.getAttribute('#web-area', 'data-next') === '1' &&
+    await page.locator('#web-lines .web-thread').count() === 0,
+    'touching the wrong dot spins no thread');
+  for (let n = 1; n <= 8; n++) await page.click('#web-area .web-dot[data-n="' + n + '"]');
+  ok(await page.getAttribute('#web-area', 'data-done') === '1', 'joining 1 to 8 in order finishes the web');
+  ok(await page.locator('#web-lines .web-thread').count() === 7, 'eight dots leave seven threads');
+  await shot('60-webdots.png');
+  await page.waitForSelector('#celebrate.show');
+  await page.click('#btn-cele-home');
+  await home();
+
+  // The letter tabs walk their own alphabets, in order.
+  await openGame('webdots');
+  await page.click('#web-tabs .tab[data-tab="varna"]');
+  const varnaDots = await page.$$eval('#web-area .web-dot', (els) => els.map((e) => e.textContent));
+  ok(await page.evaluate((got) => VARNAMALA.slice(0, got.length).map((v) => v.ch).join('') === got.join(''), varnaDots),
+    'the कखग tab lays the varnamala out in order (' + varnaDots.join('') + ')');
+  await home();
+
+  ok(await page.evaluate(() => {
+    for (let i = 0; i < 400; i++) {
+      const q = legsQuestion();
+      const keys = q.choices.map((c) => c.key);
+      if (new Set(keys).size !== keys.length) return false;
+      if (keys.indexOf(q.answer) < 0) return false;
+      // Every option has to be a leg count some real creature actually has.
+      if (keys.some((k) => [0, 2, 4, 6, 8].indexOf(Number(k)) < 0)) return false;
+      const said = q.answerPhrase.en + q.answerPhrase.hi + q.answerPhrase.hiSay;
+      if (/undefined|NaN/.test(said)) return false;
+    }
+    return true;
+  }), 'legs answers are real leg counts and zero is spoken as words, not "undefined"');
+
+  await openGame('legs');
+  await page.click('#legs-start');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2', null, { timeout: 15000 });
+  ok(true, 'how-many-legs moves on to the next question');
+  await shot('61-legs.png');
+  await home();
+
+  await openGame('thread');
+  ok(await page.getAttribute('#thread-area', 'data-dir') === 'up' &&
+    await page.getAttribute('#thread-area', 'data-next') === '1',
+    'the spider starts at the bottom and climbs');
+  await page.click('#thread-area .rung[data-n="7"]');
+  ok(await page.getAttribute('#thread-area', 'data-next') === '1', 'a rung out of turn is refused');
+  for (const n of [1, 2, 3]) await page.click('#thread-area .rung[data-n="' + n + '"]');
+  ok(await page.getAttribute('#thread-area', 'data-next') === '4', 'climbing 1, 2, 3 asks for 4 next');
+  await shot('62-thread.png');
+  for (let n = 4; n <= 10; n++) await page.click('#thread-area .rung[data-n="' + n + '"]');
+  // Having gone up, the same ladder is walked back down — the app's only
+  // backward counting.
+  await page.waitForFunction(() => document.getElementById('thread-area').dataset.dir === 'down', null, { timeout: 10000 });
+  ok(await page.getAttribute('#thread-area', 'data-next') === '10', 'coming down starts from ten');
+  await page.click('#thread-area .rung[data-n="9"]');
+  ok(await page.getAttribute('#thread-area', 'data-next') === '10', 'nine before ten is refused on the way down');
+  await page.click('#thread-area .rung[data-n="10"]');
+  ok(await page.getAttribute('#thread-area', 'data-next') === '9', 'ten then nine, counting backwards');
+  await home();
+
+  await page.evaluate(() => store.setLevel('hard'));
+  await page.evaluate(() => { showScreen('screen-thread'); GAMES.thread.enter(); });
+  const twos = await page.$$eval('#thread-area .rung', (els) => els.map((e) => Number(e.dataset.n)));
+  ok(twos.join(',') === '20,18,16,14,12,10,8,6,4,2', 'hard counts in twos (' + twos.join(',') + ')');
+  await page.evaluate(() => { store.setLevel('normal'); showScreen('screen-home'); });
+
+  await openGame('suit');
+  // Read the pattern off the left half and mirror it, leaving the last square
+  // until after we have checked that a half-done suit is not accepted.
+  const suitPlan = await page.evaluate(() => {
+    const left = Array.from(document.querySelectorAll('#suit-grid .suit-cell[data-side="left"]'));
+    const half = left.filter((c) => c.dataset.r === '0').length;
+    return left.filter((c) => Number(c.dataset.color) >= 0).map((c) => ({
+      r: c.dataset.r,
+      c: String(half - 1 - Number(c.dataset.c)),
+      v: Number(c.dataset.color)
+    }));
+  });
+  ok(suitPlan.length > 0, 'the suit always starts with a pattern to copy');
+  const fill = async (step) => {
+    await page.click('#suit-colors .chip:nth-child(' + (step.v + 1) + ')');
+    await page.click('#suit-grid .suit-cell[data-side="right"][data-r="' + step.r + '"][data-c="' + step.c + '"]');
+  };
+  for (const step of suitPlan.slice(0, -1)) await fill(step);
+  ok(await page.getAttribute('#suit-grid', 'data-done') === '0', 'a suit that is one square short is not finished');
+  await fill(suitPlan[suitPlan.length - 1]);
+  ok(await page.getAttribute('#suit-grid', 'data-done') === '1', 'mirroring every square finishes the suit');
+  await shot('63-suit.png');
+  await page.waitForSelector('#celebrate.show');
+  await page.click('#btn-cele-home');
   await home();
 
   console.log('# speech: a line is never cut off by the next one');

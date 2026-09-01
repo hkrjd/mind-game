@@ -1412,7 +1412,8 @@ const HOME_SECTIONS = [
   { title: { en: '🧠 Brain Games', hi: '🧠 दिमाग के खेल' }, games: ['memory', 'pattern', 'missing', 'oddone', 'ispy', 'cups', 'puzzle', 'maze', 'shadow', 'train', 'sizes', 'order'] },
   { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'bharat', 'festivals', 'family', 'helpers', 'feed', 'feelings', 'safety', 'vehicles', 'whereride', 'traffic'] },
   { title: { en: '🔬 Science & Nature', hi: '🔬 विज्ञान और कुदरत' }, games: ['floatsink', 'homes', 'babies', 'mixcolors', 'weather', 'gardener'] },
-  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['farm', 'skypop', 'drawing', 'rangoli', 'facemaker', 'dress', 'tidy', 'yoga', 'piano', 'tune', 'drum', 'rhymes', 'stickers'] }
+  { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['farm', 'skypop', 'drawing', 'rangoli', 'facemaker', 'dress', 'tidy', 'yoga', 'piano', 'tune', 'drum', 'rhymes', 'stickers'] },
+  { title: { en: '🕷️ Spider Hero', hi: '🕷️ मकड़ी हीरो' }, games: ['webdots', 'legs', 'thread', 'suit'] }
 ];
 
 // Where ⬅️ should land when leaving a game: the shelf it was opened from.
