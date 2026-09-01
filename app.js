@@ -27,7 +27,7 @@ const LETTERS = [
   { ch: 'N', emoji: '👃', en: 'Nose', hi: 'नाक', hiSay: 'Naak' },
   { ch: 'O', emoji: '🍊', en: 'Orange', hi: 'संतरा', hiSay: 'Santra' },
   { ch: 'P', emoji: '🦜', en: 'Parrot', hi: 'तोता', hiSay: 'Tota' },
-  { ch: 'Q', emoji: '👑', en: 'Queen', hi: 'रानी', hiSay: 'Rani' },
+  { ch: 'Q', emoji: '👸', en: 'Queen', hi: 'रानी', hiSay: 'Rani' },
   { ch: 'R', emoji: '🌈', en: 'Rainbow', hi: 'इंद्रधनुष', hiSay: 'Indradhanush' },
   { ch: 'S', emoji: '☀️', en: 'Sun', hi: 'सूरज', hiSay: 'Sooraj' },
   { ch: 'T', emoji: '🌳', en: 'Tree', hi: 'पेड़', hiSay: 'Ped' },
@@ -383,25 +383,143 @@ const speech = (() => {
     return u;
   }
 
+  /* ---- One line at a time ----
+     The app used to cancel whatever was being said every time it started the
+     next line, so a long "Yay! The elephant lives in the forest!" was cut in
+     half by the following question. Now anything the app starts on a timer
+     waits its turn. A fresh tap is the one thing that jumps the queue, and
+     only the first line of that tap does: the child's tap is answered at
+     once, while two lines from the same tap still arrive in order. */
+  const GESTURE_MS = 800;  // how long a tap still counts as "the child asked"
+  const BREATH_MS = 120;   // the pause between two queued lines
+  const MAX_PENDING = 2;   // rapid taps replace each other, they never pile up
+
+  const queue = [];
+  const afters = [];
+  let speaking = false;
+  let turn = 0;            // callbacks from an utterance we left behind
+  let watchdog = 0;
+  let lastGesture = -1e9;
+  let gestureClaimed = true;
+  let afterSeq = 0;
+
+  function busy() { return speaking || queue.length > 0; }
+
+  // Some Android engines never fire onend; without this the queue would wedge.
+  function watchdogMs(text, rate) {
+    return Math.min(20000, 1500 + (text.length * 110) / (rate || 0.85));
+  }
+
+  function hush() {
+    turn++;
+    speaking = false;
+    clearTimeout(watchdog);
+    watchdog = 0;
+    try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+  }
+
+  function finished(token) {
+    if (token !== turn) return;
+    clearTimeout(watchdog);
+    watchdog = 0;
+    speaking = false;
+    setTimeout(() => { if (!speaking) pump(); }, BREATH_MS);
+  }
+
+  function pump() {
+    if (!ok || speaking || !queue.length) {
+      if (!busy()) armAfters();
+      return;
+    }
+    const item = queue.shift();
+    speaking = true;
+    const token = ++turn;
+    // Android quirk: speak() immediately after cancel() gets swallowed.
+    setTimeout(() => {
+      if (token !== turn) return;
+      try {
+        const base = item.rate || store.getRate();
+        const rate = item.lang === 'hi' ? Math.max(0.6, base - 0.05) : base;
+        const u = utter(item.text, item.lang, item.lang === 'hi' ? hiVoice : enVoice, rate, item.pitch || 1.1);
+        u.onend = () => finished(token);
+        u.onerror = () => finished(token);
+        watchdog = setTimeout(() => finished(token), watchdogMs(item.text, rate));
+        window.speechSynthesis.speak(u);
+      } catch (e) {
+        finished(token);
+      }
+    }, 30);
+  }
+
   // lang: 'en' | 'hi'. Never throws; silent no-op without support (or muted).
+  // opts.now forces the interruption even without a tap.
   function speak(text, lang, opts) {
     if (!ok || !text || store.getMute()) return;
     const o = opts || {};
-    try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
-    // Android quirk: speak() immediately after cancel() gets swallowed.
-    setTimeout(() => {
-      try {
-        const base = o.rate || store.getRate();
-        const rate = lang === 'hi' ? Math.max(0.6, base - 0.05) : base;
-        window.speechSynthesis.speak(utter(text, lang, lang === 'hi' ? hiVoice : enVoice, rate, o.pitch || 1.1));
-      } catch (e) { /* ignore */ }
-    }, 30);
+    const fresh = !gestureClaimed && (Date.now() - lastGesture) < GESTURE_MS;
+    if (fresh || o.now) {
+      gestureClaimed = true;
+      queue.length = 0;
+      hush();
+    }
+    queue.push({ text: String(text), lang: lang, rate: o.rate, pitch: o.pitch });
+    while (queue.length > MAX_PENDING) queue.shift();
+    // Anything waiting for silence has to keep waiting now.
+    afters.forEach((rec) => { clearTimeout(rec.timer); rec.timer = 0; });
+    pump();
+  }
+
+  /* Run fn once the talking has actually stopped — what a fixed setTimeout
+     could only guess at, and guessed wrong at every speech speed but one.
+     min keeps the moment from passing too fast, max guarantees the game moves
+     on even where speech is muted, missing or broken. */
+  function after(fn, opts) {
+    const o = opts || {};
+    const rec = { id: ++afterSeq, fn: fn, min: o.min || 0, gap: o.gap || 0, at: Date.now(), timer: 0, hard: 0 };
+    afters.push(rec);
+    rec.hard = setTimeout(() => fire(rec), o.max || 8000);
+    armAfters();
+    return rec.id;
+  }
+
+  function armAfters() {
+    if (busy()) return;
+    afters.forEach((rec) => {
+      if (rec.timer) return;
+      rec.timer = setTimeout(() => fire(rec), Math.max(rec.gap, rec.min - (Date.now() - rec.at)));
+    });
+  }
+
+  function drop(rec) {
+    const i = afters.indexOf(rec);
+    if (i < 0) return false;
+    afters.splice(i, 1);
+    clearTimeout(rec.timer);
+    clearTimeout(rec.hard);
+    return true;
+  }
+
+  function fire(rec) {
+    if (!drop(rec)) return;
+    try { rec.fn(); } catch (e) { /* ignore */ }
+  }
+
+  function cancelAfter(id) {
+    const rec = afters.find((r) => r.id === id);
+    if (rec) drop(rec);
+  }
+
+  // A tap earns one interruption: the child asked for this, so answer it now.
+  function noteGesture() {
+    lastGesture = Date.now();
+    gestureClaimed = false;
   }
 
   // Settings-screen preview: plays even while muted (the parent asked for it).
   function testVoice(kind, text) {
     if (!ok) return;
-    try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+    queue.length = 0;
+    hush();
     setTimeout(() => {
       try {
         window.speechSynthesis.speak(utter(text, kind, kind === 'hi' ? hiVoice : enVoice, store.getRate(), 1.1));
@@ -421,9 +539,19 @@ const speech = (() => {
     } catch (e) { /* ignore */ }
   }
 
-  function stop() {
+  // Stop talking, but keep whatever was waiting on the silence: muting must
+  // not strand a quiz that is waiting to move to the next question.
+  function silence() {
     if (!ok) return;
-    try { window.speechSynthesis.cancel(); } catch (e) { /* ignore */ }
+    queue.length = 0;
+    hush();
+    armAfters();
+  }
+
+  // Leaving a screen drops the pending continuations too.
+  function stop() {
+    afters.slice().forEach((rec) => drop(rec));
+    silence();
   }
 
   function setPreferred(kind, voiceURI) {
@@ -445,6 +573,10 @@ const speech = (() => {
     current,
     setPreferred,
     testVoice,
+    silence,
+    after,
+    cancelAfter,
+    noteGesture,
     hasHindi() { return !!hiVoice; },
     supported() { return ok; },
     warnNoHindiOnce() {
@@ -790,7 +922,7 @@ const quiz = {
   // Leaving mid-round must not let the pending "next question" (or the
   // celebration) land on whatever screen the child moved to.
   stop() {
-    clearTimeout(this.timer);
+    speech.cancelAfter(this.timer);
     this.timer = 0;
     this.locked = true;
   },
@@ -867,7 +999,9 @@ const quiz = {
       this.renderDots();
       announce(q.answerPhrase[store.getLang()]);
       sayPhrase(joinPhrase(rand(PRAISE), q.answerPhrase));
-      this.timer = setTimeout(() => {
+      // The praise has to be heard in full before the next question starts
+      // talking over it — but the star still gets its moment first.
+      this.timer = speech.after(() => {
         if (this.count >= this.cfg.total) {
           celebrate({
             again: () => { hideCelebrate(); quiz.start(quiz.cfg); }
@@ -875,7 +1009,7 @@ const quiz = {
         } else {
           this.next();
         }
-      }, 1600);
+      }, { min: 1200, gap: 450 });
     } else {
       sfx.wrong();
       btn.classList.add('dim', 'wiggle');
@@ -1274,7 +1408,7 @@ const GAMES = {
 // so this list can name games that a later script registers.
 const HOME_SECTIONS = [
   { title: { en: '📚 ABC & Words', hi: '📚 ABC और शब्द' }, games: ['abc', 'tracing', 'spelling', 'phonics', 'capsmall', 'matra', 'hindiword', 'readword', 'rhymewords', 'opposites', 'listen', 'leftright', 'stories'] },
-  { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'countit', 'numline', 'tables', 'board100', 'clock', 'compare', 'share', 'measure', 'coins', 'shop', 'week', 'tower'] },
+  { title: { en: '🔢 Numbers & Math', hi: '🔢 गिनती और मैथ' }, games: ['math', 'countit', 'numline', 'after20', 'before20', 'tables', 'board100', 'clock', 'compare', 'share', 'measure', 'coins', 'shop', 'week', 'tower'] },
   { title: { en: '🧠 Brain Games', hi: '🧠 दिमाग के खेल' }, games: ['memory', 'pattern', 'missing', 'oddone', 'ispy', 'cups', 'puzzle', 'maze', 'shadow', 'train', 'sizes', 'order'] },
   { title: { en: '🌍 Know the World', hi: '🌍 दुनिया जानो' }, games: ['shapes', 'animals', 'fruits', 'body', 'objects', 'flowers', 'bharat', 'festivals', 'family', 'helpers', 'feed', 'feelings', 'safety', 'vehicles', 'whereride', 'traffic'] },
   { title: { en: '🔬 Science & Nature', hi: '🔬 विज्ञान और कुदरत' }, games: ['floatsink', 'homes', 'babies', 'mixcolors', 'weather', 'gardener'] },
@@ -1293,9 +1427,11 @@ function openGameScreen(id, backTo) {
   // Show first, then start: the screen must already be visible so a game can
   // measure its canvas, and so its fresh timers survive the screen change.
   showScreen(g.screen);
+  // Name the game before starting it: the hint a game speaks in enter() then
+  // queues behind the title instead of arriving ahead of it.
+  sayPhrase(GAME_TITLES[id]);
   g.enter();
   navPush(g.screen);
-  sayPhrase(GAME_TITLES[id]);
 }
 
 function gameCard(id, backTo) {
@@ -1540,7 +1676,7 @@ function boot() {
     const m = !store.getMute();
     store.setMute(m);
     updateMuteBtn();
-    if (m) speech.stop(); else sfx.pop();
+    if (m) speech.silence(); else sfx.pop();
   });
   $('star-pill').addEventListener('click', () => {
     if (!GAMES.stickers) return;
@@ -1590,7 +1726,9 @@ function boot() {
 
   // First touch unlocks/resumes the AudioContext (mobile autoplay policy)
   // and warms up the speech engine so the first word isn't swallowed.
-  document.addEventListener('pointerdown', () => { sfx.ensure(); speech.prime(); }, { passive: true });
+  const gesture = () => { sfx.ensure(); speech.prime(); speech.noteGesture(); };
+  document.addEventListener('pointerdown', gesture, { passive: true, capture: true });
+  document.addEventListener('keydown', gesture, { passive: true, capture: true });
 
   const firstRun = !store.langChosen();
   store.touchStreak();

@@ -3,6 +3,8 @@
    games-math2.js — Math Pack 2: hands-on number sense.
    countit  — touch every object once while it counts aloud
    numline  — which number is missing from the line
+   after20  — which number comes after this one (1-20)
+   before20 — which number comes before this one (1-20)
    share    — deal things out equally between plates
    measure  — build a block tower as tall as the thing
    ================================================================ */
@@ -14,7 +16,9 @@ Object.assign(T, {
   shareHint: { en: 'Tap a plate to give it one — everyone gets the same!', hi: 'प्लेट दबाकर एक-एक दो — सबको बराबर!' },
   shareUneven: { en: 'Not equal! Let us share again.', hi: 'बराबर नहीं! फिर से बाँटते हैं।', hiSay: 'Barabar nahi! Phir se baantte hain.' },
   measureHint: { en: 'Add blocks until they are as tall!', hi: 'उतने ब्लॉक लगाओ जितना लंबा है!' },
-  measureAdd: { en: '➕ Block', hi: '➕ ब्लॉक' }
+  measureAdd: { en: '➕ Block', hi: '➕ ब्लॉक' },
+  afterDesc: { en: 'Which number comes after?', hi: 'बाद में कौन सा नंबर आएगा?' },
+  beforeDesc: { en: 'Which number comes before?', hi: 'पहले कौन सा नंबर आएगा?' }
 });
 
 // Speaks just the number word, for counting out loud.
@@ -164,6 +168,62 @@ $('numline-start').addEventListener('click', () => {
 });
 
 GAMES.numline = { emoji: '❓', color: 'var(--sky)', screen: 'screen-numline', enter() { } };
+
+/* ================= Aage / Pehle Kya? (neighbours on the number line) =========
+   One question with the arrow pointing either way, so the two games share a
+   maker instead of a copy. */
+
+GAME_TITLES.after20 = { en: 'What Comes After', hi: 'आगे क्या आएगा', hiSay: 'Aage kya aayega' };
+GAME_TITLES.before20 = { en: 'What Comes Before', hi: 'पहले क्या आएगा', hiSay: 'Pehle kya aayega' };
+
+buildScreen('after20',
+  '<div class="intro-emoji">➡️</div>' +
+  '<p class="hint" data-t="afterDesc"></p>' +
+  '<button id="after20-start" class="big-btn" data-t="startBtn"></button>');
+
+buildScreen('before20',
+  '<div class="intro-emoji">⬅️</div>' +
+  '<p class="hint" data-t="beforeDesc"></p>' +
+  '<button id="before20-start" class="big-btn" data-t="startBtn"></button>');
+
+// dir = +1 asks what follows the number, -1 what comes before it.
+function stepQuestion(dir) {
+  // The shown number is kept off the end it would step past, so the answer
+  // always lands inside 1-20.
+  const shown = dir > 0
+    ? 1 + Math.floor(Math.random() * 19)
+    : 2 + Math.floor(Math.random() * 19);
+  const ans = shown + dir;
+  const opts = [ans];
+  // Near misses only — a wrong answer should still look like a neighbour.
+  while (opts.length < 3) {
+    const n = ans + (Math.floor(Math.random() * 5) - 2);
+    if (n >= 1 && n <= 20 && opts.indexOf(n) < 0) opts.push(n);
+  }
+  const cell = (txt, q) => '<span class="nl-cell' + (q ? ' nl-q' : '') + '">' + txt + '</span>';
+  const strip = dir > 0 ? cell(shown, 0) + cell('?', 1) : cell('?', 1) + cell(shown, 0);
+  return {
+    key: 'ST' + dir + shown,
+    prompt: dir > 0
+      ? phrase('What comes after ' + shown + '?', shown + ' के बाद क्या आएगा?', shown + ' ke baad kya aayega?')
+      : phrase('What comes before ' + shown + '?', shown + ' से पहले क्या आएगा?', shown + ' se pehle kya aayega?'),
+    extra: '<div class="numline-strip">' + strip + '</div>',
+    choices: shuffle(opts).map((n) => ({ key: String(n), html: '<span class="nl-big">' + n + '</span>' })),
+    answer: String(ans),
+    answerPhrase: numPhrase100(ans)
+  };
+}
+
+$('after20-start').addEventListener('click', () => {
+  quiz.start({ make: () => stepQuestion(1), backTo: 'screen-after20' });
+});
+
+$('before20-start').addEventListener('click', () => {
+  quiz.start({ make: () => stepQuestion(-1), backTo: 'screen-before20' });
+});
+
+GAMES.after20 = { emoji: '➡️', color: 'var(--mint)', screen: 'screen-after20', enter() { } };
+GAMES.before20 = { emoji: '⬅️', color: 'var(--lilac)', screen: 'screen-before20', enter() { } };
 
 /* ================= Baraabar Baanto (equal sharing) ================= */
 

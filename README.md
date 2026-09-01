@@ -3,7 +3,7 @@
 A learning game for little kids (around age 5) that teaches through play — in **Hindi and English together**.
 छोटे बच्चों (लगभग 5 साल) के लिए एक गेम जो खेल-खेल में सिखाता है — **हिंदी और English दोनों में**।
 
-No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **73 games** in one app.
+No installs, no internet needed after loading — just open `index.html` in any browser (phone, tablet, or computer). **75 games** in one app.
 
 ## 🎮 The games / गेम्स
 
@@ -38,6 +38,8 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 📅 **Hafte ke Din / हफ़्ते के दिन** | The 7 days of the week — listen, chant along, then put the shuffled days in order |
 | 🔢 **Count Them / गिनो और मिलाओ** | Touch each thing once while it counts aloud, then tap the number you reached |
 | ❓ **Missing Number / नंबर गायब** | 3, 4, ?, 6 — which number ran away from the line? |
+| ➡️ **What Comes After / आगे क्या आएगा** | 12 → ? — name the next number, anywhere in 1–20 |
+| ⬅️ **What Comes Before / पहले क्या आएगा** | ? ← 12 — name the one just before, anywhere in 1–20 |
 | 🍪 **Share Equally / बराबर बाँटो** | Deal cookies out one by one so every plate gets the same |
 | 📐 **How Tall? / कितना लंबा** | Stack blocks until they are exactly as tall as the giraffe |
 
@@ -117,7 +119,7 @@ The whole app also works with a screen reader or a keyboard: every answer tile h
 
 ### 🏠 Finding a game
 
-Home is one screen, not a wall of 73 cards:
+Home is one screen, not a wall of 75 cards:
 
 - **🎯 Today's game** — one suggested game a day, picked from the ones the child has played least, so the games at the bottom of the list get a turn too.
 - **⏮️ Just played** — the last six games, one tap away.
@@ -129,7 +131,7 @@ Home is one screen, not a wall of 73 cards:
 The **👪 Parent Corner** button at the bottom of home shows:
 
 - how many minutes were played on each of the last 7 days,
-- total ⭐, stickers unlocked, day streak, and how many of the 73 games have been tried,
+- total ⭐, stickers unlocked, day streak, and how many of the 75 games have been tried,
 - the games played most — and a rotating list of ones **not tried yet**, to suggest something new,
 - a **daily play limit** (off / 15 / 30 / 45 min). When it is reached the app shows a friendly "time for a break" message — it is a nudge, not a lock,
 - **how hard it should be** — 🐣 Easy, 🙂 Normal or 🦁 Hard. This changes how many answers a quiz offers (2 / 3 / 4), how long a round is, how big the numbers get in the maths games, the size of the mazes, the number of memory pairs, and the length of the tunes to copy,

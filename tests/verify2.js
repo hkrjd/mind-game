@@ -1208,6 +1208,208 @@ function ok(cond, msg) {
   ok(!/[ऀ-ॿ]/.test(babyWord), 'baby-animal tiles follow the chosen language (' + babyWord + ')');
   await home();
 
+  console.log('# emoji integrity');
+
+  // Emoji added after the 2020 set are empty boxes on an older phone.
+  const TOO_NEW = [[0x1F6DC, 0x1F6DC], [0x1FA75, 0x1FA77], [0x1FA7B, 0x1FA7C], [0x1FA88, 0x1FA89],
+    [0x1FA8F, 0x1FA8F], [0x1FAA9, 0x1FAAF], [0x1FAB7, 0x1FABF], [0x1FAC3, 0x1FAC6],
+    [0x1FAD7, 0x1FADF], [0x1FAE0, 0x1FAE9], [0x1FAF0, 0x1FAF8]];
+  // Kept on purpose: nothing older draws an X-ray, a lotus or a nest.
+  const ALLOWED_NEW = ['\u{1FA7B}', '\u{1FAB7}', '\u{1FABA}'];
+  const tooNew = [];
+  fs.readdirSync(ROOT).filter((f) => /\.(js|html|css)$/.test(f)).forEach((f) => {
+    for (const ch of fs.readFileSync(path.join(ROOT, f), 'utf8')) {
+      const cp = ch.codePointAt(0);
+      if (TOO_NEW.some((r) => cp >= r[0] && cp <= r[1]) && ALLOWED_NEW.indexOf(ch) < 0) {
+        tooNew.push(f + ' ' + ch);
+      }
+    }
+  });
+  ok(tooNew.length === 0, 'no emoji too new for a 2020 phone beyond the three kept on purpose (' + tooNew.join(', ') + ')');
+
+  // The Helpers game is built from joined sequences; without the joiner in
+  // range a doctor can come apart into two glyphs.
+  ok(/unicode-range:[^;]*U\+200D/.test(fs.readFileSync(path.join(ROOT, 'style.css'), 'utf8')),
+    'the emoji font covers the zero-width joiner');
+
+  // Memory pairs match on the emoji itself, so a repeat would be a false pair.
+  ok(await page.evaluate(() => new Set(MEMORY_POOL.map((m) => m.emoji)).size === MEMORY_POOL.length),
+    'every memory card has its own picture');
+
+  // A bloom the flower pack does not know gets spoken as a bare "Flower".
+  ok(await page.evaluate(() => GARDEN_BLOOMS.every((e) => PACK_FLOWERS.some((f) => f.emoji === e))),
+    'every garden bloom has a name in the flower pack');
+
+  // These two put all of their pictures on one board at once.
+  ok(await page.evaluate(() => {
+    const all = [].concat.apply([], RHYME_SETS).map((r) => r.emoji);
+    return new Set(all).size === all.length;
+  }), 'no two rhyming words share a picture');
+  ok(await page.evaluate(() => {
+    const all = BABY_PAIRS.map((b) => b.mom).concat(BABY_PAIRS.map((b) => b.baby));
+    return new Set(all).size === all.length;
+  }), 'every animal and every baby on the matching board looks different');
+
+  // The old wig, rake, well and jar had no honest picture.
+  ok(await page.evaluate(() => {
+    const words = [].concat.apply([], RHYME_SETS).map((r) => r.w);
+    return ['wig', 'rake', 'well'].every((w) => words.indexOf(w) < 0);
+  }), 'the rhyme game no longer asks for a word it cannot draw');
+
+  // A canvas does not inherit the page font, so the jigsaw needs it by name.
+  ok(await page.evaluate(() => /KKEmoji/.test(getComputedStyle(document.body).fontFamily)),
+    'the body font stack still leads with the colour emoji font');
+  ok(!/270px system-ui/.test(fs.readFileSync(path.join(ROOT, 'games-arcade.js'), 'utf8')),
+    'the jigsaw canvas draws with the page font, not the system default');
+
+  console.log('# what comes after / before');
+  ok(await page.evaluate(() => {
+    for (let i = 0; i < 400; i++) {
+      const dirs = [1, -1];
+      for (let d = 0; d < 2; d++) {
+        const q = stepQuestion(dirs[d]);
+        const keys = q.choices.map((c) => c.key);
+        if (new Set(keys).size !== keys.length) return false;
+        if (keys.indexOf(q.answer) < 0) return false;
+        if (keys.some((k) => Number(k) < 1 || Number(k) > 20)) return false;
+        const shown = Number(q.extra.replace(/<[^>]*>/g, ' ').replace('?', ' ').trim());
+        if (Number(q.answer) !== shown + dirs[d]) return false;
+      }
+    }
+    return true;
+  }), 'after/before always answer the neighbour, stay inside 1-20 and never repeat a choice');
+
+  await openGame('after20');
+  await page.click('#after20-start');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2', null, { timeout: 15000 });
+  ok(true, 'what-comes-after moves on to the next question');
+  await shot('50-after20.png');
+  await home();
+
+  await openGame('before20');
+  await page.click('#before20-start');
+  await answerQuiz(1);
+  await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2', null, { timeout: 15000 });
+  ok(true, 'what-comes-before moves on to the next question');
+  await shot('51-before20.png');
+  await home();
+
+  console.log('# speech: a line is never cut off by the next one');
+  const p3 = await browser.newPage({ viewport: { width: 900, height: 760 } });
+  p3.on('pageerror', (e) => errors.push('p3 pageerror: ' + e.message));
+  p3.on('console', (m) => { if (m.type() === 'error') errors.push('p3 console: ' + m.text()); });
+  // A stand-in voice that reports every speak, cancel and finish, and takes
+  // __dur ms to say anything (-1 = an engine that never reports finishing).
+  await p3.addInitScript(() => {
+    window.__log = [];
+    window.__dur = 2500;
+    const ss = window.speechSynthesis;
+    try {
+      ss.speak = (u) => {
+        window.__log.push({ t: 'speak', text: String(u.text) });
+        if (window.__dur >= 0) {
+          setTimeout(() => {
+            window.__log.push({ t: 'end', text: String(u.text) });
+            if (u.onend) u.onend({});
+          }, window.__dur);
+        }
+      };
+      ss.cancel = () => { window.__log.push({ t: 'cancel' }); };
+    } catch (e) { /* ignore */ }
+  });
+  await p3.goto('file://' + path.join(ROOT, 'index.html'));
+  await p3.waitForSelector('#home-grid');
+  if (await p3.locator('#lang-pick.show').count()) await p3.click('#lp-en');
+  await p3.waitForSelector('#cat-tiles .cat-tile');
+
+  const openOn = async (pg, id) => {
+    const cat = await pg.evaluate((g) => HOME_SECTIONS.findIndex((sec) => sec.games.includes(g)), id);
+    await pg.click('#cat-tiles .cat-tile[data-cat="' + cat + '"]');
+    await pg.waitForSelector('#screen-cat.active');
+    await pg.click('#cat-grid .game-card[data-game="' + id + '"]');
+    await pg.waitForSelector('#screen-' + id + '.active');
+  };
+  const homeOn = async (pg) => {
+    for (let i = 0; i < 5; i++) {
+      if (await pg.locator('#screen-home.active').count()) break;
+      await pg.click('#btn-back');
+      await pg.waitForTimeout(80);
+    }
+    await pg.waitForSelector('#screen-home.active');
+  };
+
+  await openOn(p3, 'after20');
+  await p3.evaluate(() => { window.__dur = 200; });
+  await p3.click('#after20-start');
+  await p3.waitForSelector('#quiz-choices .quiz-tile');
+  await p3.waitForTimeout(1500); // let the question be read out, then start clean
+  await p3.evaluate(() => { window.__log.length = 0; window.__dur = 2500; });
+  const rightKey = await p3.getAttribute('#quiz-choices', 'data-answer');
+  await p3.click('#quiz-choices .quiz-tile[data-key="' + rightKey + '"]');
+  // The next line is queued, so wait for it rather than for the screen.
+  await p3.waitForFunction(() => {
+    const l = window.__log;
+    const a = l.findIndex((e) => e.t === 'speak');
+    if (a < 0) return false;
+    const b = l.findIndex((e, i) => i > a && e.t === 'end' && e.text === l[a].text);
+    return b > a && l.findIndex((e, i) => i > b && e.t === 'speak') > b;
+  }, null, { timeout: 20000 });
+  const slog = await p3.evaluate(() => window.__log);
+  const si = slog.findIndex((e) => e.t === 'speak');
+  const praiseText = si >= 0 ? slog[si].text : '';
+  const ei = slog.findIndex((e, i) => i > si && e.t === 'end' && e.text === praiseText);
+  const ni = slog.findIndex((e, i) => i > si && e.t === 'speak');
+  ok(si >= 0 && ei > si, 'the praise for a right answer is spoken all the way to the end');
+  ok(ni > ei, 'the next question waits for the praise to finish (' + praiseText + ')');
+  ok(!slog.slice(si, ei).some((e) => e.t === 'cancel'), 'nothing cancels the praise while it is being said');
+
+  // An engine that never reports finishing must not freeze the game.
+  await p3.evaluate(() => { window.__dur = -1; });
+  const beforeQ = await p3.getAttribute('#quiz-choices', 'data-qnum');
+  await p3.click('#quiz-choices .quiz-tile[data-key="' + (await p3.getAttribute('#quiz-choices', 'data-answer')) + '"]');
+  await p3.waitForFunction((n) => document.getElementById('quiz-choices').dataset.qnum !== n, beforeQ, { timeout: 20000 });
+  ok(true, 'the quiz still moves on when the voice never reports finishing');
+
+  // Reaching for the mute button mid-round must not strand the quiz: it stops
+  // the talking, it does not cancel what the talking was holding up.
+  await p3.evaluate(() => { window.__dur = 2500; });
+  const mutedMid = await p3.getAttribute('#quiz-choices', 'data-qnum');
+  await p3.click('#quiz-choices .quiz-tile[data-key="' + (await p3.getAttribute('#quiz-choices', 'data-answer')) + '"]');
+  await p3.click('#btn-mute');
+  await p3.waitForFunction((n) => document.getElementById('quiz-choices').dataset.qnum !== n, mutedMid, { timeout: 10000 });
+  ok(true, 'muting in the middle of a round still lets the quiz move on');
+  await p3.click('#btn-mute');
+
+  // Muted from the start, there is nothing to wait for.
+  await p3.evaluate(() => { store.setMute(true); });
+  const mutedQ = await p3.getAttribute('#quiz-choices', 'data-qnum');
+  await p3.click('#quiz-choices .quiz-tile[data-key="' + (await p3.getAttribute('#quiz-choices', 'data-answer')) + '"]');
+  await p3.waitForFunction((n) => document.getElementById('quiz-choices').dataset.qnum !== n, mutedQ, { timeout: 5000 });
+  ok(true, 'a muted quiz moves on without waiting for a voice');
+  await p3.evaluate(() => store.setMute(false));
+  await homeOn(p3);
+
+  // Rhyme lines used to be given "characters x 95ms", which ignored the speed
+  // the parent picked and cut every line short on the slow setting.
+  await p3.evaluate(() => { window.__dur = 700; store.setRate(0.7); });
+  await openOn(p3, 'rhymes');
+  await p3.click('#rhymes-list .rhyme-card[data-rhyme="machhli"]');
+  await p3.waitForSelector('#rhyme-view:not([hidden])');
+  await p3.evaluate(() => { window.__log.length = 0; });
+  await p3.click('#rhyme-play');
+  await p3.waitForFunction(() => window.__log.filter((e) => e.t === 'speak').length >= 3, null, { timeout: 25000 });
+  const rlog = await p3.evaluate(() => window.__log);
+  const at = [];
+  rlog.forEach((e, i) => { if (e.t === 'speak') at.push(i); });
+  let inOrder = true;
+  for (let k = 1; k < Math.min(3, at.length); k++) {
+    const between = rlog.slice(at[k - 1], at[k]);
+    if (!between.some((e) => e.t === 'end' && e.text === rlog[at[k - 1]].text)) inOrder = false;
+  }
+  ok(inOrder, 'each rhyme line is read out in full before the next one starts');
+  await p3.close();
+
   console.log('# indian voice picking (mocked voices)');
   const p2 = await browser.newPage({ viewport: { width: 900, height: 700 } });
   p2.on('pageerror', (e) => errors.push('p2 pageerror: ' + e.message));

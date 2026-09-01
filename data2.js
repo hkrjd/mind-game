@@ -305,7 +305,7 @@ const VARNAMALA = [
   { ch: 'ढ', roman: 'Dha', word: 'ढोल', wordSay: 'Dhol', emoji: '🪘' },
   { ch: 'ण', roman: 'Na', word: '', wordSay: '', emoji: '' },
   { ch: 'त', roman: 'Ta', word: 'तरबूज', wordSay: 'Tarbooj', emoji: '🍉' },
-  { ch: 'थ', roman: 'Tha', word: 'थैला', wordSay: 'Thaila', emoji: '👜' },
+  { ch: 'थ', roman: 'Tha', word: 'थैला', wordSay: 'Thaila', emoji: '🛍️' },
   { ch: 'द', roman: 'Da', word: 'दरवाज़ा', wordSay: 'Darwaza', emoji: '🚪' },
   { ch: 'ध', roman: 'Dha', word: 'धनुष', wordSay: 'Dhanush', emoji: '🏹' },
   { ch: 'न', roman: 'Na', word: 'नल', wordSay: 'Nal', emoji: '🚰' },

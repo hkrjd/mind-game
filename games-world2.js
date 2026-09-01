@@ -408,7 +408,7 @@ const TIDY_THINGS = [
   { emoji: '🧩', bin: 'toys', en: 'Puzzle', hi: 'पज़ल', hiSay: 'Puzzle' },
   { emoji: '📕', bin: 'shelf', en: 'Book', hi: 'किताब', hiSay: 'Kitab' },
   { emoji: '📓', bin: 'shelf', en: 'Notebook', hi: 'कॉपी', hiSay: 'Copy' },
-  { emoji: '🍬', bin: 'bin', en: 'Wrapper', hi: 'रैपर', hiSay: 'Wrapper' },
+  { emoji: '🧃', bin: 'bin', en: 'Empty juice box', hi: 'खाली जूस डिब्बा', hiSay: 'Khali juice dibba' },
   { emoji: '🥤', bin: 'bin', en: 'Empty cup', hi: 'खाली गिलास', hiSay: 'Khali glass' }
 ];
 
@@ -503,7 +503,7 @@ GAME_TITLES.festivals = { en: 'Festivals', hi: 'त्योहार', hiSay: '
 
 const FESTIVALS = [
   { emoji: '🪔', en: 'Diwali', hi: 'दिवाली', hiSay: 'Diwali', item: { emoji: '🧨', en: 'firecracker', hi: 'पटाखा', hiSay: 'patakha' } },
-  { emoji: '🎨', en: 'Holi', hi: 'होली', hiSay: 'Holi', item: { emoji: '💦', en: 'water gun', hi: 'पिचकारी', hiSay: 'pichkari' } },
+  { emoji: '🎨', en: 'Holi', hi: 'होली', hiSay: 'Holi', item: { emoji: '💦', en: 'coloured water', hi: 'रंग वाला पानी', hiSay: 'rang wala paani' } },
   { emoji: '🕌', en: 'Eid', hi: 'ईद', hiSay: 'Eid', item: { emoji: '🌙', en: 'moon', hi: 'चाँद', hiSay: 'chaand' } },
   { emoji: '🧵', en: 'Raksha Bandhan', hi: 'रक्षाबंधन', hiSay: 'Raksha bandhan', item: { emoji: '🎀', en: 'rakhi', hi: 'राखी', hiSay: 'rakhi' } },
   { emoji: '🎄', en: 'Christmas', hi: 'क्रिसमस', hiSay: 'Christmas', item: { emoji: '🎅', en: 'Santa', hi: 'सांता', hiSay: 'Santa' } },

@@ -65,7 +65,7 @@ function ok(cond, msg) {
   ok(await page.locator('#cat-tiles .cat-tile').count() === 6, 'home shows 6 category shelves');
   const totalGames = await page.evaluate(() =>
     HOME_SECTIONS.reduce((a, s) => a + s.games.filter((g) => GAMES[g]).length, 0));
-  ok(totalGames === 73, 'the shelves hold all 73 games');
+  ok(totalGames === 75, 'the shelves hold all 75 games');
   const homeH = await page.evaluate(() => document.documentElement.scrollHeight);
   ok(homeH < 2000, 'home fits in about one screen (' + homeH + 'px, was ~6600px)');
   await shot('01-home.png');

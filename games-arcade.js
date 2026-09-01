@@ -433,7 +433,10 @@ const puzzleGame = (() => {
     grad.addColorStop(1, '#FFE3B3');
     c.fillStyle = grad;
     c.fillRect(0, 0, size, size);
-    c.font = '270px system-ui, sans-serif';
+    // The body stack pins a colour emoji font first; "system-ui" alone hands
+    // the picture to whatever the OS picks, which on some systems is a flat
+    // monochrome outline.
+    c.font = '270px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif');
     c.textAlign = 'center';
     c.textBaseline = 'middle';
     c.fillText(pic.emoji, size / 2, size / 2 + 16);

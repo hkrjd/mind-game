@@ -828,10 +828,6 @@ const rhymesGame = (() => {
 
   const state = { open: null, timer: null, playing: false, line: -1 };
 
-  function lineText(r, i) {
-    return r.lang === 'en' ? r.lines[i] : r.lines[i].hi;
-  }
-
   function speakLine(r, i) {
     highlight(i);
     if (r.lang === 'en') {
@@ -854,7 +850,7 @@ const rhymesGame = (() => {
 
   function stopPlay() {
     state.playing = false;
-    clearTimeout(state.timer);
+    speech.cancelAfter(state.timer);
     $('rhyme-play').textContent = T.playAllBtn[store.getLang()];
   }
 
@@ -862,8 +858,10 @@ const rhymesGame = (() => {
     const r = state.open;
     if (!r || i >= r.lines.length) { stopPlay(); highlight(-1); return; }
     speakLine(r, i);
-    const dur = lineText(r, i).length * 95 + 1000;
-    state.timer = later(() => playFrom(i + 1), dur);
+    // A line used to be given `characters x 95ms`, which ignored the speech
+    // speed the parent picked and measured the Devanagari even when the
+    // romanized line was the one being read. Wait for the voice instead.
+    state.timer = speech.after(() => playFrom(i + 1), { min: 500, gap: 350 });
   }
 
   function openRhyme(r) {
@@ -1015,7 +1013,7 @@ const tablesGame = (() => {
 
   function stopPlay() {
     state.playing = false;
-    clearTimeout(state.timer);
+    speech.cancelAfter(state.timer);
     $('tables-play').textContent = T.playAllBtn[store.getLang()];
   }
 
@@ -1026,7 +1024,8 @@ const tablesGame = (() => {
       return;
     }
     speakLine(b);
-    state.timer = later(() => playFrom(b + 1), tableLine(state.table, b).length * 80 + 1100);
+    // "Two ones are two" has to finish before "two twos are four" begins.
+    state.timer = speech.after(() => playFrom(b + 1), { min: 500, gap: 350 });
   }
 
   function render() {

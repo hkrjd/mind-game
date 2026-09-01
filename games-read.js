@@ -281,12 +281,12 @@ GAME_TITLES.rhymewords = { en: 'Rhyme Time', hi: 'तुकबंदी', hiSay:
 const RHYME_SETS = [
   [{ w: 'cat', emoji: '🐱' }, { w: 'hat', emoji: '🎩' }, { w: 'bat', emoji: '🦇' }],
   [{ w: 'dog', emoji: '🐶' }, { w: 'log', emoji: '🪵' }, { w: 'frog', emoji: '🐸' }],
-  [{ w: 'sun', emoji: '☀️' }, { w: 'bun', emoji: '🍞' }, { w: 'run', emoji: '🏃' }],
-  [{ w: 'pig', emoji: '🐷' }, { w: 'wig', emoji: '👱' }, { w: 'twig', emoji: '🌿' }],
-  [{ w: 'car', emoji: '🚗' }, { w: 'star', emoji: '⭐' }, { w: 'jar', emoji: '🫙' }],
+  [{ w: 'sun', emoji: '☀️' }, { w: 'bun', emoji: '🥯' }, { w: 'run', emoji: '🏃' }],
+  [{ w: 'pig', emoji: '🐷' }, { w: 'big', emoji: '🐘' }, { w: 'twig', emoji: '🌿' }],
+  [{ w: 'car', emoji: '🚗' }, { w: 'star', emoji: '⭐' }, { w: 'jar', emoji: '🍯' }],
   [{ w: 'bee', emoji: '🐝' }, { w: 'tree', emoji: '🌳' }, { w: 'key', emoji: '🔑' }],
-  [{ w: 'cake', emoji: '🍰' }, { w: 'snake', emoji: '🐍' }, { w: 'rake', emoji: '🧹' }],
-  [{ w: 'bell', emoji: '🔔' }, { w: 'shell', emoji: '🐚' }, { w: 'well', emoji: '🕳️' }]
+  [{ w: 'cake', emoji: '🍰' }, { w: 'snake', emoji: '🐍' }, { w: 'shake', emoji: '🥤' }],
+  [{ w: 'bell', emoji: '🔔' }, { w: 'shell', emoji: '🐚' }, { w: 'smell', emoji: '👃' }]
 ];
 
 buildScreen('rhymewords',

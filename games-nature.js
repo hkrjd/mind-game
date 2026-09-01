@@ -228,7 +228,7 @@ GAMES.homes = {
 GAME_TITLES.babies = { en: 'Animal Babies', hi: 'जानवर के बच्चे', hiSay: 'Janwar ke bachche' };
 
 const BABY_PAIRS = [
-  { key: 'hen', mom: '🐔', baby: '🐤', mEn: 'Hen', mHi: 'मुर्गी', mSay: 'Murgi', bEn: 'Chick', bHi: 'चूज़ा', bSay: 'Chooza' },
+  { key: 'hen', mom: '🐔', baby: '🐣', mEn: 'Hen', mHi: 'मुर्गी', mSay: 'Murgi', bEn: 'Chick', bHi: 'चूज़ा', bSay: 'Chooza' },
   { key: 'cow', mom: '🐄', baby: '🐮', mEn: 'Cow', mHi: 'गाय', mSay: 'Gaay', bEn: 'Calf', bHi: 'बछड़ा', bSay: 'Bachhda' },
   { key: 'dog', mom: '🐕', baby: '🐶', mEn: 'Dog', mHi: 'कुत्ता', mObl: 'कुत्ते', mSay: 'Kutta', mSayObl: 'Kutte', bEn: 'Puppy', bHi: 'पिल्ला', bSay: 'Pilla' },
   { key: 'cat', mom: '🐈', baby: '🐱', mEn: 'Cat', mHi: 'बिल्ली', mSay: 'Billi', bEn: 'Kitten', bHi: 'बिल्ली का बच्चा', bSay: 'Billi ka bachcha' },

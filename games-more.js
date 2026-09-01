@@ -382,7 +382,7 @@ const storiesGame = (() => {
 
   function stopPlay() {
     state.playing = false;
-    clearTimeout(state.timer);
+    speech.cancelAfter(state.timer);
     if ($('story-play')) $('story-play').textContent = T.playAllBtn[store.getLang()];
   }
 
@@ -394,7 +394,9 @@ const storiesGame = (() => {
       return;
     }
     speakLine(s, i);
-    state.timer = later(() => playFrom(i + 1), s.lines[i][store.getLang()].length * 95 + 1100);
+    // The next line starts when this one has actually been read out, at
+    // whatever speed the parent chose.
+    state.timer = speech.after(() => playFrom(i + 1), { min: 500, gap: 350 });
   }
 
   function showQuestion() {
