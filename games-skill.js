@@ -173,7 +173,7 @@ const tracingGame = (() => {
       } else {
         sayPhrase(joinPhrase(rand(PRAISE), wordPhrase(SHAPES.find((s) => s.key === TRACE_SHAPES[state.idx]))));
       }
-      setTimeout(() => { move(1, false); }, 1700);
+      later(() => { move(1, false); }, 1700);
     }
   }
 
@@ -241,15 +241,7 @@ const spellingGame = (() => {
 
   const state = { words: [], i: 0, filled: 0 };
 
-  function dots() {
-    const d = $('spell-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 5; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.i ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('spell-dots', 5, state.i); }
 
   function newWord() {
     const w = state.words[state.i];
@@ -303,7 +295,7 @@ const spellingGame = (() => {
         const spelt = w.word.split('').join('! ') + '! ' + cap(w.word) + '!';
         sayPhrase(joinPhrase(rand(PRAISE), phrase(spelt, spelt + ' मतलब ' + w.hi + '!', spelt + ' matlab ' + w.hiSay + '!')));
         state.i++;
-        setTimeout(() => {
+        later(() => {
           if (state.i >= 5) {
             dots();
             celebrate({ again: () => { hideCelebrate(); start(); } });
@@ -313,10 +305,7 @@ const spellingGame = (() => {
         }, 2000);
       }
     } else {
-      sfx.wrong();
-      tile.classList.add('wiggle');
-      tile.addEventListener('animationend', () => tile.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(tile);
     }
   }
 
@@ -403,15 +392,7 @@ const capsmallGame = (() => {
   }
   window.addEventListener('resize', redrawLines);
 
-  function dots() {
-    const d = $('cs-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 3; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('cs-dots', 3, state.round); }
 
   function nextRound() {
     state.letters = sample(LETTERS, 4).map((l) => l.ch);
@@ -481,7 +462,7 @@ const capsmallGame = (() => {
       if (state.matched >= 4) {
         state.round++;
         dots();
-        setTimeout(() => {
+        later(() => {
           if (state.round >= 3) {
             celebrate({ again: () => { hideCelebrate(); start(); } });
           } else {
@@ -490,10 +471,7 @@ const capsmallGame = (() => {
         }, 1400);
       }
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 
@@ -519,15 +497,7 @@ const shadowGame = (() => {
 
   const state = { round: 0, items: [], selected: null, matched: 0 };
 
-  function dots() {
-    const d = $('shadow-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 2; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('shadow-dots', 2, state.round); }
 
   function nextRound() {
     state.items = state.round === 0 ? sample(ANIMALS, 6) : sample(MEMORY_POOL, 6);
@@ -587,7 +557,7 @@ const shadowGame = (() => {
       if (state.matched >= 6) {
         state.round++;
         dots();
-        setTimeout(() => {
+        later(() => {
           if (state.round >= 2) {
             celebrate({ again: () => { hideCelebrate(); start(); } });
           } else {
@@ -596,10 +566,7 @@ const shadowGame = (() => {
         }, 1400);
       }
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 
@@ -623,7 +590,8 @@ buildScreen('math',
   '<button id="math-minus" class="big-btn alt" data-t="minusBtn"></button></div>');
 
 function mathChoices(ans) {
-  const cands = shuffle([ans - 2, ans - 1, ans + 1, ans + 2].filter((x) => x >= 0 && x <= 10 && x !== ans)).slice(0, 2);
+  const top = lvl(10, 10, 20);
+  const cands = shuffle([ans - 2, ans - 1, ans + 1, ans + 2].filter((x) => x >= 0 && x <= top && x !== ans)).slice(0, 2);
   return shuffle([ans].concat(cands)).map((n) => ({ key: String(n), html: '<span>' + n + '</span>' }));
 }
 
@@ -638,8 +606,8 @@ function emojiRow(em, n, crossedFrom) {
 }
 
 function plusQuestion() {
-  const a = 1 + Math.floor(Math.random() * 5);
-  const b = 1 + Math.floor(Math.random() * 4);
+  const a = 1 + Math.floor(Math.random() * lvl(3, 5, 9));
+  const b = 1 + Math.floor(Math.random() * lvl(3, 4, 9));
   const sum = a + b;
   const em = rand(COUNT_EMOJIS);
   return {
@@ -656,7 +624,7 @@ function plusQuestion() {
 }
 
 function minusQuestion() {
-  const a = 3 + Math.floor(Math.random() * 7); // 3..9
+  const a = 3 + Math.floor(Math.random() * lvl(4, 7, 14)); // 3..9 (more on hard)
   const b = 1 + Math.floor(Math.random() * (a - 1)); // 1..a-1
   const res = a - b;
   const em = rand(COUNT_EMOJIS);
@@ -796,12 +764,12 @@ const board100Game = (() => {
       state.found++;
       $('board-grid').dataset.found = String(state.found);
       sayPhrase(joinPhrase(rand(PRAISE), numPhrase100(n)));
-      if (state.found >= 5) {
+      if (state.found >= lvl(3, 5, 7)) {
         state.mode = 'learn';
         $('board-hint').textContent = T.boardHint[store.getLang()];
-        setTimeout(() => celebrate({ again: () => { hideCelebrate(); startFind(); } }), 1200);
+        later(() => celebrate({ again: () => { hideCelebrate(); startFind(); } }), 1200);
       } else {
-        setTimeout(nextTarget, 1500);
+        later(nextTarget, 1500);
       }
     } else {
       sfx.wrong();
@@ -895,7 +863,7 @@ const rhymesGame = (() => {
     if (!r || i >= r.lines.length) { stopPlay(); highlight(-1); return; }
     speakLine(r, i);
     const dur = lineText(r, i).length * 95 + 1000;
-    state.timer = setTimeout(() => playFrom(i + 1), dur);
+    state.timer = later(() => playFrom(i + 1), dur);
   }
 
   function openRhyme(r) {
@@ -1058,7 +1026,7 @@ const tablesGame = (() => {
       return;
     }
     speakLine(b);
-    state.timer = setTimeout(() => playFrom(b + 1), tableLine(state.table, b).length * 80 + 1100);
+    state.timer = later(() => playFrom(b + 1), tableLine(state.table, b).length * 80 + 1100);
   }
 
   function render() {

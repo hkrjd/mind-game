@@ -156,10 +156,7 @@ const whererideGame = (() => {
     const sel = state.selected;
     if (!sel) return;
     if (sel.item.zone !== z.key) {
-      sfx.wrong();
-      zoneEl.classList.add('wiggle');
-      zoneEl.addEventListener('animationend', () => zoneEl.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(zoneEl);
       return;
     }
     sfx.correct();
@@ -180,7 +177,7 @@ const whererideGame = (() => {
       sel.item.hiSay + ' ' + z.hiSay + ' mein chalti hai!'
     ));
     if (state.placed >= RIDE_ITEMS.length) {
-      state.timer = setTimeout(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
+      state.timer = later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
     }
   }
 
@@ -321,15 +318,7 @@ const dressGame = (() => {
 
   const state = { rounds: [], i: 0, locked: false, timer: 0 };
 
-  function dots() {
-    const d = $('dress-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 5; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.i ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('dress-dots', 5, state.i); }
 
   function newRound() {
     clearTimeout(state.timer);
@@ -356,10 +345,7 @@ const dressGame = (() => {
   function choose(btn, item, r) {
     if (state.locked) return;
     if (item.en !== r.right.en) {
-      sfx.wrong();
-      btn.classList.add('dim', 'wiggle');
-      btn.addEventListener('animationend', () => btn.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(btn, true);
       return;
     }
     state.locked = true;
@@ -379,7 +365,7 @@ const dressGame = (() => {
     )));
     state.i++;
     dots();
-    state.timer = setTimeout(() => {
+    state.timer = later(() => {
       if (state.i >= 5) celebrate({ again: () => { hideCelebrate(); start(); } });
       else newRound();
     }, 2000);
@@ -477,10 +463,7 @@ const tidyGame = (() => {
     const sel = state.selected;
     if (!sel) return;
     if (sel.item.bin !== bn.key) {
-      sfx.wrong();
-      binEl.classList.add('wiggle');
-      binEl.addEventListener('animationend', () => binEl.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(binEl);
       return;
     }
     sfx.correct();
@@ -499,7 +482,7 @@ const tidyGame = (() => {
     ));
     if (state.left <= 0) {
       sayPhrase(T.tidyDone);
-      state.timer = setTimeout(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
+      state.timer = later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
     }
   }
 

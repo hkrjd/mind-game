@@ -392,7 +392,7 @@ const storiesGame = (() => {
       return;
     }
     speakLine(s, i);
-    state.timer = setTimeout(() => playFrom(i + 1), s.lines[i][store.getLang()].length * 95 + 1100);
+    state.timer = later(() => playFrom(i + 1), s.lines[i][store.getLang()].length * 95 + 1100);
   }
 
   function showQuestion() {
@@ -416,12 +416,9 @@ const storiesGame = (() => {
           starFly(b);
           confetti(14);
           sayPhrase(joinPhrase(rand(PRAISE), wordPhrase(c)));
-          setTimeout(() => closeStory(), 2000);
+          later(() => closeStory(), 2000);
         } else {
-          sfx.wrong();
-          b.classList.add('wiggle');
-          b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-          sayPhrase(rand(ENCOURAGE));
+          nope(b);
         }
       });
       box.appendChild(b);

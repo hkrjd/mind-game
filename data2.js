@@ -239,14 +239,11 @@ Object.assign(T, {
   goBtn: { en: '🚗 GO!', hi: '🚗 चलो!' },
   greenGo: { en: 'Green light! Go go go!', hi: 'हरी बत्ती! चलो चलो!', hiSay: 'Hari batti! Chalo chalo!' },
   redStop: { en: 'Red light! Stop!', hi: 'लाल बत्ती! रुको!', hiSay: 'Laal batti! Ruko!' },
-  drawHint: { en: 'Draw with your finger!', hi: 'ऊँगली से बनाओ!' },
   glowBtn: { en: '🌙 Glow', hi: '🌙 चमक' },
   dayBtn: { en: '☀️ Day', hi: '☀️ दिन' },
-  popTarget: { en: 'Pop', hi: 'फोड़ो', hiSay: 'phodo' },
   plusBtn: { en: '➕ Addition', hi: '➕ जोड़' },
   minusBtn: { en: '➖ Subtraction', hi: '➖ घटाव' },
   whatTime: { en: 'What time is it?', hi: 'कितने बजे हैं?', hiSay: 'Kitne baje hain?' },
-  nextBtn: { en: '⏭️ Next', hi: '⏭️ अगला' },
   playAllBtn: { en: '▶️ Play', hi: '▶️ सुनाओ' },
   stopBtn: { en: '⏸️ Stop', hi: '⏸️ रोको' }
 });

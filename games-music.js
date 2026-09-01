@@ -92,7 +92,7 @@ function makeEcho(id, cfg) {
   const area = () => $(id + '-area');
 
   function tmo(fn, ms) {
-    const t = setTimeout(fn, ms);
+    const t = later(fn, ms);
     state.timeouts.push(t);
     return t;
   }
@@ -146,7 +146,7 @@ function makeEcho(id, cfg) {
   function newRound() {
     stop();
     dots();
-    const len = Math.min(cfg.startLen + state.round, cfg.maxLen);
+    const len = Math.min(lvl(2, 2, 3) + state.round, lvl(4, 5, 6));
     state.seq = [];
     for (let i = 0; i < len; i++) state.seq.push(rand(cfg.items).key);
     area().dataset.seq = state.seq.join(',');
@@ -217,7 +217,7 @@ GAME_TITLES.tune = { en: 'Copy the Tune', hi: 'धुन कॉपी', hiSay: '
 
 makeEcho('tune', {
   emoji: '🎶', color: 'var(--lilac)', hintKey: 'tuneHint',
-  padClass: 'tune-pad', startLen: 2, maxLen: 5,
+  padClass: 'tune-pad',
   items: SUR.slice(0, 5).map((n) => ({ key: n.key, label: n.label, freq: n.freq, hex: n.hex, dur: 0.5 }))
 });
 
@@ -227,7 +227,7 @@ GAME_TITLES.drum = { en: 'Keep the Beat', hi: 'ताल', hiSay: 'Taal' };
 
 makeEcho('drum', {
   emoji: '🥁', color: 'var(--tangerine)', hintKey: 'drumHint',
-  padClass: 'drum-pad', startLen: 2, maxLen: 5,
+  padClass: 'drum-pad',
   items: [
     { key: 'dhol', label: '🪘', freq: 150, dur: 0.35, type: 'sine' },
     { key: 'tabla', label: '🥁', freq: 260, dur: 0.28, type: 'triangle' },

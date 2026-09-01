@@ -169,9 +169,25 @@ const joinPhrase = (a, b) => ({
 const wordPhrase = (item) => phrase(item.en + '!', item.hi + '!', item.hiSay + '!');
 
 let REDUCED = false;
-try { REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* ignore */ }
+try {
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  REDUCED = mq.matches;
+  // An installed app is rarely restarted, so follow the setting live.
+  const onChange = (e) => { REDUCED = e.matches; };
+  if (mq.addEventListener) mq.addEventListener('change', onChange);
+  else if (mq.addListener) mq.addListener(onChange);
+} catch (e) { /* ignore */ }
 
 /* ---------------- Persistence (never crashes) ---------------- */
+
+// Three difficulty levels, set by a grown-up in the Parent Corner. Games ask
+// for their own numbers through lvl(): easy / normal / hard.
+const LEVELS = ['easy', 'normal', 'hard'];
+
+function lvl(easy, normal, hard) {
+  const i = LEVELS.indexOf(store.getLevel());
+  return [easy, normal, hard][i < 0 ? 1 : i];
+}
 
 // 'YYYY-MM-DD' in the device's own timezone — used for streaks and daily time.
 function dayKey(d) {
@@ -249,6 +265,11 @@ const store = (() => {
       set('mg-time', JSON.stringify(keep));
     },
     todaySeconds() { return this.times()[dayKey()] || 0; },
+    getLevel() {
+      const l = get('mg-level', 'normal');
+      return LEVELS.indexOf(l) >= 0 ? l : 'normal';
+    },
+    setLevel(l) { set('mg-level', l); },
     getLimit() { return parseInt(get('mg-limit', '0'), 10) || 0; },
     setLimit(m) { set('mg-limit', String(m)); },
     streak() {
@@ -543,6 +564,12 @@ function starFly(fromEl) {
   } catch (e) { /* ignore */ }
 }
 
+// Mirrors what the app says out loud into a live region, for screen readers.
+function announce(msg) {
+  const el = $('quiz-verdict');
+  if (el) el.textContent = msg || '';
+}
+
 let toastTimer = null;
 function toast(msg) {
   const t = $('toast');
@@ -551,6 +578,29 @@ function toast(msg) {
   t.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 4500);
+}
+
+// Every round-based game draws the same little row of progress pips.
+function renderDots(elId, total, filled) {
+  const d = $(elId);
+  if (!d) return;
+  d.innerHTML = '';
+  for (let k = 0; k < total; k++) {
+    const s = document.createElement('span');
+    s.className = 'dot' + (k < filled ? ' filled' : '');
+    d.appendChild(s);
+  }
+}
+
+// The one "not quite" reaction: a soft sound, a shake, a nudge to try again.
+function nope(el, dim) {
+  sfx.wrong();
+  if (el) {
+    if (dim) el.classList.add('dim');
+    el.classList.add('wiggle');
+    el.addEventListener('animationend', () => el.classList.remove('wiggle'), { once: true });
+  }
+  sayPhrase(rand(ENCOURAGE));
 }
 
 function updateStarCount() {
@@ -596,6 +646,7 @@ function showScreen(id) {
       try { GAMES[prev].onLeave(); } catch (e) { /* ignore */ }
     }
     if (currentScreen === 'screen-quiz') quiz.stop();
+    clearGameTimers();
     if (SCROLL_KEEP[currentScreen]) scrollMem[currentScreen] = window.scrollY;
   }
   speech.stop();
@@ -643,6 +694,22 @@ function goBack() {
 }
 
 window.addEventListener('popstate', performBack);
+
+// Games schedule their "next round" / celebration with this instead of a
+// raw setTimeout: everything pending is dropped the moment the child leaves,
+// so nothing ever fires onto a screen that is no longer there.
+const gameTimers = [];
+
+function later(fn, ms) {
+  const id = setTimeout(fn, ms);
+  gameTimers.push(id);
+  return id;
+}
+
+function clearGameTimers() {
+  gameTimers.forEach(clearTimeout);
+  gameTimers.length = 0;
+}
 
 // Non-game screens (Parent Corner) register here so a language switch
 // re-renders their generated content, the way GAMES[id].onLang does.
@@ -721,7 +788,7 @@ const quiz = {
 
   start(cfg) {
     this.cfg = cfg;
-    this.cfg.total = cfg.total || 5;
+    this.cfg.total = cfg.total || lvl(4, 5, 6);
     this.count = 0;
     this.lastKey = null;
     showScreen('screen-quiz');
@@ -749,10 +816,21 @@ const quiz = {
     box.dataset.answer = q.answer;
     box.dataset.qnum = String(this.count + 1);
     box.innerHTML = '';
-    q.choices.forEach((c) => {
+    // Fewer choices make every quiz in the app easier, in one place.
+    let choices = q.choices;
+    const want = lvl(2, 3, 4);
+    if (choices.length > want) {
+      const right = choices.filter((c) => c.key === q.answer);
+      const wrong = shuffle(choices.filter((c) => c.key !== q.answer)).slice(0, Math.max(1, want - right.length));
+      choices = shuffle(right.concat(wrong));
+    }
+    box.dataset.count = String(choices.length);
+    choices.forEach((c) => {
       const b = document.createElement('button');
       b.className = 'quiz-tile';
       b.dataset.key = c.key;
+      // Shape and colour tiles are pure SVG, so without this they announce nothing.
+      b.setAttribute('aria-label', c.label || String(c.key));
       b.innerHTML = c.html;
       b.addEventListener('click', () => this.pick(b));
       box.appendChild(b);
@@ -760,13 +838,7 @@ const quiz = {
   },
 
   renderDots() {
-    const dots = $('quiz-dots');
-    dots.innerHTML = '';
-    for (let i = 0; i < this.cfg.total; i++) {
-      const d = document.createElement('span');
-      d.className = 'dot' + (i < this.count ? ' filled' : '');
-      dots.appendChild(d);
-    }
+    renderDots('quiz-dots', this.cfg.total, this.count);
   },
 
   pick(btn) {
@@ -783,6 +855,7 @@ const quiz = {
       starFly(btn);
       this.count++;
       this.renderDots();
+      announce(q.answerPhrase[store.getLang()]);
       sayPhrase(joinPhrase(rand(PRAISE), q.answerPhrase));
       this.timer = setTimeout(() => {
         if (this.count >= this.cfg.total) {
@@ -797,7 +870,9 @@ const quiz = {
       sfx.wrong();
       btn.classList.add('dim', 'wiggle');
       btn.addEventListener('animationend', () => btn.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      const nope = rand(ENCOURAGE);
+      announce(nope[store.getLang()]);
+      sayPhrase(nope);
     }
   },
 
@@ -1054,12 +1129,13 @@ const memoryGame = {
   first: null,
   lock: false,
   matched: 0,
-  total: 6,
+  total: 6, // replaced per level in newGame()
 
   newGame() {
     this.first = null;
     this.lock = false;
     this.matched = 0;
+    this.total = lvl(4, 6, 8);
     $('memory-hint').textContent = T.memoryHint[store.getLang()];
     const grid = $('memory-grid');
     grid.innerHTML = '';
@@ -1068,7 +1144,8 @@ const memoryGame = {
       const b = document.createElement('button');
       b.className = 'mem-card';
       b.dataset.emoji = item.emoji;
-      b.setAttribute('aria-label', 'card');
+      b.setAttribute('aria-label', 'Face-down card / बंद कार्ड');
+      b.setAttribute('aria-pressed', 'false');
       b.innerHTML = '<div class="mem-inner">' +
         '<div class="mem-face mem-back">❓</div>' +
         '<div class="mem-face mem-front">' + item.emoji + '</div></div>';
@@ -1082,6 +1159,8 @@ const memoryGame = {
     if (this.lock || card.classList.contains('flipped')) return;
     sfx.flip();
     card.classList.add('flipped');
+    card.setAttribute('aria-pressed', 'true');
+    card.setAttribute('aria-label', card.dataset.emoji);
     if (!this.first) {
       this.first = card;
       return;
@@ -1094,6 +1173,7 @@ const memoryGame = {
       setTimeout(() => {
         a.classList.add('matched');
         b.classList.add('matched');
+        [a, b].forEach((c) => c.setAttribute('aria-label', c.dataset.emoji + ' — matched / मिल गया'));
         sfx.correct();
         sayPhrase(wordPhrase(b._item));
         store.addStars(1);
@@ -1109,8 +1189,11 @@ const memoryGame = {
     } else {
       setTimeout(() => {
         sfx.wrong();
-        a.classList.remove('flipped');
-        b.classList.remove('flipped');
+        [a, b].forEach((c) => {
+          c.classList.remove('flipped');
+          c.setAttribute('aria-pressed', 'false');
+          c.setAttribute('aria-label', 'Face-down card / बंद कार्ड');
+        });
         this.lock = false;
       }, 900);
     }
@@ -1191,8 +1274,10 @@ function openGameScreen(id, backTo) {
   sfx.pop();
   gameBackTo = backTo || 'screen-home';
   store.notePlay(id);
-  g.enter();
+  // Show first, then start: the screen must already be visible so a game can
+  // measure its canvas, and so its fresh timers survive the screen change.
   showScreen(g.screen);
+  g.enter();
   navPush(g.screen);
   sayPhrase(GAME_TITLES[id]);
 }
@@ -1460,7 +1545,13 @@ function boot() {
       sfx.pop();
       abcGame.tab = t.dataset.tab;
       abcGame.render();
+      document.querySelectorAll('#screen-abc .tab').forEach((x) => {
+        x.setAttribute('aria-selected', x.dataset.tab === abcGame.tab ? 'true' : 'false');
+      });
     });
+  });
+  document.querySelectorAll('.tabs .tab').forEach((x) => {
+    x.setAttribute('aria-selected', x.classList.contains('active') ? 'true' : 'false');
   });
   $('abc-quiz').addEventListener('click', () => {
     quiz.start({ make: (i) => abcGame.make(i), backTo: 'screen-abc' });

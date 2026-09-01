@@ -106,6 +106,8 @@ No installs, no internet needed after loading — just open `index.html` in any 
 
 Everything is spoken aloud, so the child does not need to read. Right answers earn ⭐ stars (saved on the device) with confetti; wrong answers just get a gentle wiggle and "फिर से कोशिश करो!" — no timers, no losing.
 
+The whole app also works with a screen reader or a keyboard: every answer tile has a spoken name, right and wrong are announced, focus is always visible, and pinch-zoom is never blocked.
+
 ## ▶️ How to play / कैसे खेलें
 
 1. Open `index.html` in a browser (double-click works — no server needed), **or** host it with GitHub Pages (below).
@@ -130,6 +132,7 @@ The **👪 Parent Corner** button at the bottom of home shows:
 - total ⭐, stickers unlocked, day streak, and how many of the 73 games have been tried,
 - the games played most — and a rotating list of ones **not tried yet**, to suggest something new,
 - a **daily play limit** (off / 15 / 30 / 45 min). When it is reached the app shows a friendly "time for a break" message — it is a nudge, not a lock,
+- **how hard it should be** — 🐣 Easy, 🙂 Normal or 🦁 Hard. This changes how many answers a quiz offers (2 / 3 / 4), how long a round is, how big the numbers get in the maths games, the size of the mazes, the number of memory pairs, and the length of the tunes to copy,
 - **reset stars** (needs two taps), and the ⚙️ Voice & Sound settings.
 
 Nothing leaves the device: all of it lives in the browser's own storage.
@@ -164,6 +167,7 @@ A minute later the game is live at `https://<your-username>.github.io/mind-game/
 - Zero-build vanilla HTML/CSS/JS — no frameworks, no assets: emoji for pictures, SVG/canvas for shapes and puzzles, Web Speech API for voices, Web Audio API for jingles.
 - Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `games-read.js`, `games-math2.js`, `games-nature.js`, `games-world2.js`, `games-fun2.js`, `games-music.js`, `parent.js` (parent corner), `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
 - Works fully offline: from `file://` directly, and as an installed PWA via the service worker. Degrades gracefully when speech/audio/localStorage are unavailable.
+- Shared helpers keep the games small: `quiz` (the question engine), `renderDots`, `nope` (the wrong-answer reaction), `later` (a timeout that is cancelled the moment the child leaves the screen), `lvl(easy, normal, hard)` for difficulty, and the `makeVocabPack` and `makeEcho` factories.
 - **When deploying an update, bump `VERSION` in `sw.js`** so installed apps fetch the new files.
 - Smoke tests (drive every game headlessly and screenshot each screen):
   ```

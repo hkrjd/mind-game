@@ -235,7 +235,7 @@ const cupsGame = (() => {
   const state = { round: 0, cups: [], ball: null, phase: 'show', timeouts: [] };
 
   function tmo(fn, ms) {
-    const id = setTimeout(fn, ms);
+    const id = later(fn, ms);
     state.timeouts.push(id);
     return id;
   }
@@ -244,15 +244,7 @@ const cupsGame = (() => {
     state.timeouts = [];
   }
 
-  function dots() {
-    const d = $('cups-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 5; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('cups-dots', 5, state.round); }
 
   function place(cup) {
     cup.el.style.transform = 'translateX(' + (cup.slot * SLOT_W) + 'px)';
@@ -382,15 +374,7 @@ const yogaGame = (() => {
   const HOLD = 5;
   const state = { poses: [], i: 0, left: HOLD, timer: 0 };
 
-  function dots() {
-    const d = $('yoga-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 6; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.i ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('yoga-dots', 6, state.i); }
 
   function paintName() {
     const p = state.poses[state.i];
@@ -403,7 +387,7 @@ const yogaGame = (() => {
     $('yoga-count').textContent = state.left > 0 ? String(state.left) : '⭐';
     if (state.left > 0) {
       sfx.pop();
-      state.timer = setTimeout(tick, 1000);
+      state.timer = later(tick, 1000);
       return;
     }
     sfx.correct();
@@ -413,7 +397,7 @@ const yogaGame = (() => {
     sayPhrase(rand(PRAISE));
     state.i++;
     dots();
-    state.timer = setTimeout(() => {
+    state.timer = later(() => {
       if (state.i >= 6) celebrate({ again: () => { hideCelebrate(); start(); } });
       else showPose();
     }, 1400);
@@ -432,7 +416,7 @@ const yogaGame = (() => {
     $('yoga-count').textContent = String(HOLD);
     popIt(box);
     sayPhrase(phrase(p.en, p.hi, p.hiSay));
-    state.timer = setTimeout(tick, 1200);
+    state.timer = later(tick, 1200);
   }
 
   function skip() {

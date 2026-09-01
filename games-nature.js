@@ -50,15 +50,7 @@ const floatsinkGame = (() => {
 
   const state = { items: [], i: 0, locked: false, timer: 0 };
 
-  function dots() {
-    const d = $('fs-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 6; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.i ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('fs-dots', 6, state.i); }
 
   function newRound() {
     clearTimeout(state.timer);
@@ -99,7 +91,7 @@ const floatsinkGame = (() => {
     sayPhrase(right ? joinPhrase(rand(PRAISE), truth) : joinPhrase(phrase('Look!', 'देखो!', 'Dekho!'), truth));
     state.i++;
     dots();
-    state.timer = setTimeout(() => {
+    state.timer = later(() => {
       if (state.i >= 6) celebrate({ again: () => { hideCelebrate(); start(); } });
       else newRound();
     }, 2400);
@@ -193,10 +185,7 @@ const homesGame = (() => {
     const sel = state.selected;
     if (!sel) return;
     if (sel.animal.home !== h.key) {
-      sfx.wrong();
-      target.classList.add('wiggle');
-      target.addEventListener('animationend', () => target.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(target);
       return;
     }
     sfx.correct();
@@ -218,7 +207,7 @@ const homesGame = (() => {
       sel.animal.hiSay + ' ' + h.hiSay + ' mein rehti hai!'
     ));
     if (state.placed >= HOME_ANIMALS.length) {
-      state.timer = setTimeout(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
+      state.timer = later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
     }
   }
 
@@ -297,10 +286,7 @@ const babiesGame = (() => {
     const sel = state.selected;
     if (!sel) { sfx.pop(); return; }
     if (sel.pair.key !== p.key) {
-      sfx.wrong();
-      kid.classList.add('wiggle');
-      kid.addEventListener('animationend', () => kid.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(kid);
       return;
     }
     sfx.correct();
@@ -319,7 +305,7 @@ const babiesGame = (() => {
     ));
     if (state.matched < state.need) return;
     state.round++;
-    state.timer = setTimeout(() => {
+    state.timer = later(() => {
       if (state.round >= 2) celebrate({ again: () => { hideCelebrate(); start(); } });
       else newRound();
     }, 2000);

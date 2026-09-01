@@ -12,7 +12,6 @@ Object.assign(T, {
   missingAsk: { en: 'What is missing?', hi: 'क्या गायब हुआ?', hiSay: 'Kya gayab hua?' },
   oddHint: { en: 'Three belong together — tap the different one!', hi: 'तीन एक जैसे हैं — जो अलग है उसे दबाओ!' },
   oddPrompt: { en: 'Which one is different?', hi: 'कौन अलग है?', hiSay: 'Kaun alag hai?' },
-  ispyFind: { en: 'Find', hi: 'ढूँढो', hiSay: 'dhoondho' }
 });
 
 const BRAIN_POOL = []
@@ -84,18 +83,10 @@ const missingGame = (() => {
 
   const state = { round: 0, items: [], missing: null, timers: [] };
 
-  function tmo(fn, ms) { state.timers.push(setTimeout(fn, ms)); }
+  function tmo(fn, ms) { state.timers.push(later(fn, ms)); }
   function clearTimers() { state.timers.forEach(clearTimeout); state.timers = []; }
 
-  function dots() {
-    const d = $('ms-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 5; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('ms-dots', 5, state.round); }
 
   function tile(it) {
     const s = document.createElement('span');
@@ -159,10 +150,7 @@ const missingGame = (() => {
         }
       }, 1700);
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 
@@ -281,9 +269,9 @@ const ispyGame = (() => {
       state.found++;
       $('ispy-scene').dataset.found = String(state.found);
       if (state.found >= 5) {
-        setTimeout(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 900);
+        later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 900);
       } else {
-        setTimeout(setTarget, 1500);
+        later(setTarget, 1500);
       }
     } else {
       sfx.wrong();

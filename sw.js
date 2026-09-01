@@ -1,7 +1,7 @@
 'use strict';
 /* Service worker for Khel Khel Mein Seekho.
    Bump VERSION on every deploy so clients pick up the new files. */
-const VERSION = 'kkms-v11';
+const VERSION = 'kkms-v12';
 
 const SHELL = [
   './',

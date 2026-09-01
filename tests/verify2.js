@@ -1000,6 +1000,47 @@ function ok(cond, msg) {
   await home();
   await page.click('#lang-toggle'); // back to EN
 
+  console.log('# accessibility');
+  const vp = await page.getAttribute('meta[name="viewport"]', 'content');
+  ok(!/user-scalable=no/.test(vp), 'pinch zoom is allowed again');
+  await openGame('shapes');
+  await page.click('#shapes-quiz');
+  await page.waitForSelector('#quiz-choices .quiz-tile');
+  const tileLabels = await page.$$eval('#quiz-choices .quiz-tile', (els) => els.map((e) => e.getAttribute('aria-label')));
+  ok(tileLabels.length > 0 && tileLabels.every((l) => l && l.length),
+    'every answer tile has a name for screen readers (' + tileLabels.join(', ') + ')');
+  await answerQuiz(1);
+  ok((await page.textContent('#quiz-verdict')).length > 0, 'right and wrong are announced in a live region');
+  await back();
+  await back();
+  await home();
+  await openGame('memory');
+  ok(await page.getAttribute('#memory-grid .mem-card:nth-child(1)', 'aria-pressed') === 'false',
+    'memory cards start announced as face down');
+  await page.click('#memory-grid .mem-card:nth-child(1)');
+  ok(await page.getAttribute('#memory-grid .mem-card:nth-child(1)', 'aria-pressed') === 'true',
+    'a flipped card is announced as turned over');
+  await home();
+
+  console.log('# leaving a game mid-round cancels its timers');
+  await openGame('floatsink');
+  const fsAns2 = await page.getAttribute('#fs-tank', 'data-answer');
+  await page.click('#fs-btns .fs-btn[data-side="' + fsAns2 + '"]');
+  await home();
+  await page.waitForTimeout(3000);
+  ok(await page.locator('#screen-home.active').count() === 1, 'still on home 3s after walking out mid-round');
+  ok(await page.locator('#celebrate.show').count() === 0, 'no celebration pops up over the home screen');
+  ok(await page.getAttribute('#fs-tank', 'data-round') === '1', 'the abandoned game did not advance by itself');
+
+  console.log('# language switch inside a game');
+  await openGame('leftright');
+  const lrEn = await page.textContent('#lr-area .lr-zone[data-side="left"] .lr-tag');
+  await page.click('#lang-toggle');
+  const lrHi = await page.textContent('#lr-area .lr-zone[data-side="left"] .lr-tag');
+  ok(lrEn !== lrHi && /[ऀ-ॿ]/.test(lrHi), 'left/right tags follow the language switch (' + lrEn + ' -> ' + lrHi + ')');
+  await page.click('#lang-toggle');
+  await home();
+
   console.log('# home shelves, streak and parent corner');
   await home();
   ok(await page.locator('#today-card').count() === 1, "home offers a game of the day");
@@ -1033,6 +1074,31 @@ function ok(cond, msg) {
   await page.click('#pc-limit .speed-chip[data-min="0"]');
   ok(await page.evaluate(() => store.getLimit()) === 0, 'the limit can be switched off again');
   await shot('89-parent.png');
+
+  // Difficulty: one setting, felt across every quiz in the app.
+  await page.click('#pc-level .speed-chip[data-level="easy"]');
+  ok(await page.evaluate(() => store.getLevel()) === 'easy', 'easy level saves');
+  await home();
+  await openGame('phonics');
+  await page.click('#phonics-start');
+  await page.waitForSelector('#quiz-choices .quiz-tile');
+  ok(await page.getAttribute('#quiz-choices', 'data-count') === '2', 'easy shows only two answers to pick from');
+  ok(await page.locator('#quiz-dots .dot').count() === 4, 'easy rounds are shorter (4 questions)');
+  await back();
+  await back();
+  await home();
+  await page.click('#btn-parent');
+  await page.waitForSelector('#screen-parent.active');
+  await page.click('#pc-level .speed-chip[data-level="hard"]');
+  await home();
+  await openGame('memory');
+  ok(await page.locator('#memory-grid .mem-card').count() === 16, 'hard deals 8 pairs in memory match');
+  await home();
+  await page.click('#btn-parent');
+  await page.waitForSelector('#screen-parent.active');
+  await page.click('#pc-level .speed-chip[data-level="normal"]');
+  ok(await page.evaluate(() => store.getLevel()) === 'normal', 'level goes back to normal');
+
   await page.evaluate(() => { store.setLimit(1); store.addSeconds(120); checkScreenTime(); });
   ok(await page.locator('#break-time.show').count() === 1, 'passing the daily limit shows a gentle break message');
   await page.click('#break-ok');

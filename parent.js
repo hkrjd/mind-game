@@ -12,6 +12,14 @@ Object.assign(T, {
   pcTop: { en: 'Played the most', hi: 'सबसे ज़्यादा खेले' },
   pcNew: { en: 'Not tried yet', hi: 'अभी तक नहीं खेला' },
   pcLimit: { en: 'Daily play limit', hi: 'रोज़ का समय' },
+  pcLevel: { en: 'How hard should it be?', hi: 'कितना मुश्किल रखें?' },
+  pcEasy: { en: '🐣 Easy', hi: '🐣 आसान' },
+  pcNormal: { en: '🙂 Normal', hi: '🙂 सामान्य' },
+  pcHard: { en: '🦁 Hard', hi: '🦁 मुश्किल' },
+  pcLevelNote: {
+    en: 'Changes the number of answers to choose from, how big the numbers get, maze size and more.',
+    hi: 'कितने जवाबों में से चुनना है, नंबर कितने बड़े होंगे, भूलभुलैया कितनी बड़ी — सब बदल जाता है।'
+  },
   pcLimitOff: { en: 'Off', hi: 'बंद' },
   pcReset: { en: '♻️ Reset stars', hi: '♻️ स्टार रीसेट करो' },
   pcResetSure: { en: '♻️ Tap again to reset', hi: '♻️ पक्का? फिर से दबाओ' },
@@ -38,6 +46,12 @@ const parentScreen = (() => {
     '<button class="speed-chip" data-min="30">30 min</button>' +
     '<button class="speed-chip" data-min="45">45 min</button>' +
     '</div></div>' +
+    '<div class="set-block"><h3 data-t="pcLevel"></h3>' +
+    '<div id="pc-level" class="speed-chips" data-level="normal">' +
+    '<button class="speed-chip" data-level="easy" data-t="pcEasy"></button>' +
+    '<button class="speed-chip" data-level="normal" data-t="pcNormal"></button>' +
+    '<button class="speed-chip" data-level="hard" data-t="pcHard"></button>' +
+    '</div><p class="hint pc-note" data-t="pcLevelNote"></p></div>' +
     '<div class="set-block pc-actions">' +
     '<button id="btn-settings" class="big-btn alt" data-t="settingsBtn"></button>' +
     '<button id="pc-reset" class="big-btn alt" data-t="pcReset"></button>' +
@@ -165,6 +179,14 @@ const parentScreen = (() => {
     });
   }
 
+  function renderLevel() {
+    const cur = store.getLevel();
+    $('pc-level').dataset.level = cur;
+    document.querySelectorAll('#pc-level .speed-chip').forEach((c) => {
+      c.classList.toggle('selected', c.dataset.level === cur);
+    });
+  }
+
   function render() {
     document.querySelectorAll('#screen-parent [data-t]').forEach((el) => {
       const s = T[el.dataset.t];
@@ -175,6 +197,7 @@ const parentScreen = (() => {
     renderStats();
     renderLists();
     renderLimit();
+    renderLevel();
   }
 
   document.querySelectorAll('#pc-limit .speed-chip').forEach((c) => {
@@ -182,6 +205,14 @@ const parentScreen = (() => {
       sfx.pop();
       store.setLimit(Number(c.dataset.min));
       renderLimit();
+    });
+  });
+
+  document.querySelectorAll('#pc-level .speed-chip').forEach((c) => {
+    c.addEventListener('click', () => {
+      sfx.pop();
+      store.setLevel(c.dataset.level);
+      renderLevel();
     });
   });
 

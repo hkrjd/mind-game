@@ -154,15 +154,7 @@ const hindiwordGame = (() => {
 
   const state = { words: [], i: 0, filled: 0 };
 
-  function dots() {
-    const d = $('hw-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 5; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.i ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('hw-dots', 5, state.i); }
 
   function newWord() {
     const w = state.words[state.i];
@@ -203,10 +195,7 @@ const hindiwordGame = (() => {
     if (tile.classList.contains('used')) return;
     const expect = w.parts[state.filled];
     if (tile.dataset.l !== expect) {
-      sfx.wrong();
-      tile.classList.add('wiggle');
-      tile.addEventListener('animationend', () => tile.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(tile);
       return;
     }
     tile.classList.add('used');
@@ -227,7 +216,7 @@ const hindiwordGame = (() => {
       w.parts.join(', ') + ' — ' + w.hiSay + '!'
     )));
     state.i++;
-    setTimeout(() => {
+    later(() => {
       if (state.i >= 5) {
         dots();
         celebrate({ again: () => { hideCelebrate(); start(); } });

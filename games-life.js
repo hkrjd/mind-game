@@ -7,7 +7,6 @@
 
 Object.assign(T, {
   shopHint: { en: 'Get everything on the list, then pay!', hi: 'लिस्ट की चीज़ें लो, फिर पैसे दो!' },
-  shopPay: { en: 'Now pay', hi: 'अब दो', hiSay: 'Ab do' },
   shopTooMuch: { en: 'Oh! That is too much — try again!', hi: 'अरे! ज़्यादा हो गया — फिर से!', hiSay: 'Are! Zyada ho gaya — phir se!' },
   shopThanks: { en: 'Thank you! Come again!', hi: 'धन्यवाद! फिर आना!', hiSay: 'Dhanyavaad! Phir aana!' },
   feedHint: { en: 'Listen — feed the right food!', hi: 'सुनो — सही खाना खिलाओ!' },
@@ -53,20 +52,8 @@ const shopGame = (() => {
 
   const state = { round: 0, need: [], got: {}, total: 0, paid: 0 };
 
-  function dots() {
-    const d = $('shop-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 3; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('shop-dots', 3, state.round); }
 
-  function listText() {
-    const lang = store.getLang();
-    return state.need.map((n) => n.item.emoji + '×' + n.count).join('   ');
-  }
 
   function speakList() {
     const parts = state.need.map((n) => ({
@@ -131,10 +118,7 @@ const shopGame = (() => {
         startPay();
       }
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 
@@ -182,7 +166,7 @@ const shopGame = (() => {
       sayPhrase(T.shopThanks);
       state.round++;
       dots();
-      setTimeout(() => {
+      later(() => {
         if (state.round >= 3) {
           celebrate({ again: () => { hideCelebrate(); start(); } });
         } else {
@@ -234,15 +218,7 @@ const feedGame = (() => {
 
   const state = { round: 0, pair: null, lastAnimal: '' };
 
-  function dots() {
-    const d = $('feed-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 5; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('feed-dots', 5, state.round); }
 
   function newRound() {
     let pair = rand(FEED_PAIRS);
@@ -287,7 +263,7 @@ const feedGame = (() => {
       $('feed-bubble').textContent = T.feedYum[store.getLang()];
       sayPhrase(joinPhrase(T.feedYum, wordPhrase(state.pair.animal)));
       state.round++;
-      setTimeout(() => {
+      later(() => {
         if (state.round >= 5) {
           dots();
           celebrate({ again: () => { hideCelebrate(); start(); } });
@@ -296,10 +272,7 @@ const feedGame = (() => {
         }
       }, 1800);
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 
@@ -351,15 +324,7 @@ const trainGame = (() => {
     ];
   }
 
-  function dots() {
-    const d = $('train-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 3; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('train-dots', 3, state.round); }
 
   function newRound() {
     state.groups = roundSpec();
@@ -421,7 +386,7 @@ const trainGame = (() => {
         document.querySelectorAll('#train-track .wagon').forEach((w) => w.classList.add('slide-off'));
         state.round++;
         dots();
-        setTimeout(() => {
+        later(() => {
           if (state.round >= 3) {
             celebrate({ again: () => { hideCelebrate(); start(); } });
           } else {
@@ -430,10 +395,7 @@ const trainGame = (() => {
         }, 1900);
       }
     } else {
-      sfx.wrong();
-      wagon.classList.add('wiggle');
-      wagon.addEventListener('animationend', () => wagon.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(wagon);
     }
   }
 
@@ -620,15 +582,7 @@ const leftrightGame = (() => {
   const LR_ITEMS = ['✋', '🐶', '🍎', '⭐', '🎈', '🐰'];
   const state = { round: 0, answer: 'left', item: '✋' };
 
-  function dots() {
-    const d = $('lr-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 6; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('lr-dots', 6, state.round); }
 
   function newRound() {
     state.answer = Math.random() < 0.5 ? 'left' : 'right';
@@ -665,7 +619,7 @@ const leftrightGame = (() => {
       sayPhrase(joinPhrase(rand(PRAISE), state.answer === 'left'
         ? phrase('Left!', 'बायाँ!', 'Bayan!')
         : phrase('Right!', 'दायाँ!', 'Dayan!')));
-      setTimeout(() => {
+      later(() => {
         if (state.round >= 6) {
           celebrate({ again: () => { hideCelebrate(); start(); } });
         } else {
@@ -673,10 +627,7 @@ const leftrightGame = (() => {
         }
       }, 1500);
     } else {
-      sfx.wrong();
-      zone.classList.add('wiggle');
-      zone.addEventListener('animationend', () => zone.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(zone);
     }
   }
 
@@ -693,7 +644,10 @@ const leftrightGame = (() => {
   return { start, onLang: newRound };
 })();
 
-GAMES.leftright = { emoji: '✋', color: 'var(--tangerine)', screen: 'screen-leftright', enter() { leftrightGame.start(); } };
+GAMES.leftright = {
+  emoji: '✋', color: 'var(--tangerine)', screen: 'screen-leftright',
+  enter() { leftrightGame.start(); }, onLang() { leftrightGame.onLang(); }
+};
 
 /* ================= Suraksha (safety) ================= */
 
@@ -803,18 +757,10 @@ const orderGame = (() => {
 
   const state = { round: 0, filled: 0, timers: [] };
 
-  function tmo(fn, ms) { state.timers.push(setTimeout(fn, ms)); }
+  function tmo(fn, ms) { state.timers.push(later(fn, ms)); }
   function clearTimers() { state.timers.forEach(clearTimeout); state.timers = []; }
 
-  function dots() {
-    const d = $('order-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < LIFE_SEQUENCES.length; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('order-dots', LIFE_SEQUENCES.length, state.round); }
 
   function newRound() {
     const seq = LIFE_SEQUENCES[state.round];
@@ -875,10 +821,7 @@ const orderGame = (() => {
         }, 2600);
       }
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 
@@ -909,15 +852,7 @@ const sizesGame = (() => {
   const SIZE_REMS = [1.4, 2, 2.6, 3.3];
   const state = { round: 0, filled: 0 };
 
-  function dots() {
-    const d = $('sizes-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 4; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('sizes-dots', 4, state.round); }
 
   function newRound() {
     const em = SIZE_ITEMS[state.round % SIZE_ITEMS.length];
@@ -967,7 +902,7 @@ const sizesGame = (() => {
         sayPhrase(joinPhrase(rand(PRAISE), phrase('Small to big!', 'छोटे से बड़ा!', 'Chhote se bada!')));
         state.round++;
         dots();
-        setTimeout(() => {
+        later(() => {
           if (state.round >= 4) {
             celebrate({ again: () => { hideCelebrate(); start(); } });
           } else {
@@ -976,10 +911,7 @@ const sizesGame = (() => {
         }, 1900);
       }
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 
@@ -1035,7 +967,7 @@ const weekGame = (() => {
   function playFrom(i) {
     if (!state.playing || i >= 7) { stopPlay(); return; }
     speakDay(i);
-    state.timer = setTimeout(() => playFrom(i + 1), 1500);
+    state.timer = later(() => playFrom(i + 1), 1500);
   }
 
   function render() {
@@ -1098,13 +1030,10 @@ const weekGame = (() => {
         store.addStars(3);
         starFly(slot);
         confetti(18);
-        setTimeout(() => celebrate({ again: () => { hideCelebrate(); startOrder(); } }), 1200);
+        later(() => celebrate({ again: () => { hideCelebrate(); startOrder(); } }), 1200);
       }
     } else {
-      sfx.wrong();
-      b.classList.add('wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b);
     }
   }
 

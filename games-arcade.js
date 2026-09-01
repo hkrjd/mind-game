@@ -59,14 +59,14 @@ const skypopGame = (() => {
       sfx.correct();
       store.addStars(1);
       starFly(b.el);
-      setTimeout(() => removeBubble(b), 260);
+      later(() => removeBubble(b), 260);
       state.popped++;
       $('skypop-area').dataset.popped = String(state.popped);
       if (state.popped >= 5) {
         stop();
-        setTimeout(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 500);
+        later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 500);
       } else {
-        setTimeout(() => pickTarget(), 700);
+        later(() => pickTarget(), 700);
       }
     } else {
       sfx.wrong();
@@ -171,7 +171,8 @@ const mazeGame = (() => {
     '<button class="maze-arrow" data-d="down" aria-label="Down">⬇️</button>' +
     '<button class="maze-arrow" data-d="right" aria-label="Right">➡️</button></div></div>');
 
-  const SIZES = [5, 6, 7, 8, 8];
+  // Read per game, so a level change in the Parent Corner applies at once.
+  const sizes = () => lvl([4, 5, 5, 6, 6], [5, 6, 7, 8, 8], [7, 8, 9, 10, 11]);
   const state = { level: 0, n: 5, cells: [], pos: 0, busy: false };
 
   function genMaze(n) {
@@ -198,15 +199,7 @@ const mazeGame = (() => {
     return cells;
   }
 
-  function dots() {
-    const d = $('maze-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < SIZES.length; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.level ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('maze-dots', sizes().length, state.level); }
 
   function drawIcons() {
     const grid = $('maze-grid');
@@ -218,7 +211,7 @@ const mazeGame = (() => {
   }
 
   function build() {
-    state.n = SIZES[state.level];
+    state.n = sizes()[state.level];
     state.cells = genMaze(state.n);
     state.pos = 0;
     state.busy = false;
@@ -268,8 +261,8 @@ const mazeGame = (() => {
       sayPhrase(rand(PRAISE));
       state.level++;
       dots();
-      setTimeout(() => {
-        if (state.level >= SIZES.length) {
+      later(() => {
+        if (state.level >= sizes().length) {
           celebrate({ again: () => { hideCelebrate(); start(); } });
         } else {
           build();
@@ -339,7 +332,7 @@ const towerGame = (() => {
     const fallTo = areaH - targetBottom - BLOCK_H - 8;
     mover.style.transition = 'top .32s cubic-bezier(.4,0,1,1)';
     mover.style.top = fallTo + 'px';
-    setTimeout(() => {
+    later(() => {
       const ok = state.lastX === null ||
         Math.min(state.x + BLOCK_W, state.lastX + BLOCK_W) - Math.max(state.x, state.lastX) >= BLOCK_W * 0.25;
       if (ok) {
@@ -360,7 +353,7 @@ const towerGame = (() => {
         if (state.floors >= GOAL) {
           state.running = false;
           cancelAnimationFrame(state.raf);
-          setTimeout(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 700);
+          later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 700);
           return;
         }
       } else {
@@ -444,15 +437,7 @@ const puzzleGame = (() => {
     $('puzzle-preview').src = src.toDataURL();
   }
 
-  function dots() {
-    const d = $('puzzle-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < PUZZLE_PICS.length; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.picIdx ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('puzzle-dots', PUZZLE_PICS.length, state.picIdx); }
 
   function isSolved() {
     return state.order.every((v, i) => v === i);
@@ -503,7 +488,7 @@ const puzzleGame = (() => {
       sayPhrase(joinPhrase(rand(PRAISE), wordPhrase(pic)));
       state.picIdx++;
       dots();
-      setTimeout(() => {
+      later(() => {
         if (state.picIdx >= PUZZLE_PICS.length) {
           celebrate({ again: () => { hideCelebrate(); start(); } });
         } else {
@@ -588,10 +573,10 @@ const gardenerGame = (() => {
       if (state.stages.every((s) => s >= 3)) {
         state.done = true;
         stopRain();
-        setTimeout(() => {
+        later(() => {
           sayPhrase(countPhrase(5));
           confetti(24);
-          setTimeout(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
+          later(() => celebrate({ again: () => { hideCelebrate(); start(); } }), 1600);
         }, 900);
       }
     } else {
@@ -682,13 +667,13 @@ const trafficGame = (() => {
     clearTimeout(state.timer);
     if (state.light === 'red') {
       setLight('green');
-      state.timer = setTimeout(cycle, 2300 + Math.random() * 1500);
+      state.timer = later(cycle, 2300 + Math.random() * 1500);
     } else if (state.light === 'green') {
       setLight('yellow');
-      state.timer = setTimeout(cycle, 900);
+      state.timer = later(cycle, 900);
     } else {
       setLight('red');
-      state.timer = setTimeout(cycle, 2200 + Math.random() * 1600);
+      state.timer = later(cycle, 2200 + Math.random() * 1600);
     }
   }
 
@@ -706,7 +691,7 @@ const trafficGame = (() => {
       car.style.transform = 'translateX(' + (road.clientWidth - 10) + 'px)';
       state.cross++;
       $('traffic-scene').dataset.cross = String(state.cross);
-      setTimeout(() => {
+      later(() => {
         car.style.transition = 'none';
         car.style.transform = 'translateX(0)';
         state.carIdx = (state.carIdx + 1) % TRAFFIC_CARS.length;
@@ -736,7 +721,7 @@ const trafficGame = (() => {
     $('traffic-car').style.transition = 'none';
     $('traffic-car').style.transform = 'translateX(0)';
     setLight('red');
-    state.timer = setTimeout(cycle, 1500);
+    state.timer = later(cycle, 1500);
   }
 
   function stop() {
@@ -944,14 +929,12 @@ const farmGame = (() => {
   const HINTS = { catch: 'farmCatchHint', hatch: 'farmHatchHint', cycle: 'farmCycleHint', fox: 'farmFoxHint' };
   const state = { mode: 'catch', raf: 0, timeouts: [], intervals: [], running: false };
 
-  function tmo(fn, ms) { const id = setTimeout(fn, ms); state.timeouts.push(id); return id; }
-  function itv(fn, ms) { const id = setInterval(fn, ms); state.intervals.push(id); return id; }
+  function tmo(fn, ms) { const id = later(fn, ms); state.timeouts.push(id); return id; }
 
   function stopAll() {
     state.running = false;
     cancelAnimationFrame(state.raf);
     state.timeouts.forEach(clearTimeout);
-    state.intervals.forEach(clearInterval);
     state.timeouts = [];
     state.intervals = [];
   }
@@ -1192,10 +1175,7 @@ const farmGame = (() => {
             }, 2600);
           }
         } else {
-          sfx.wrong();
-          b.classList.add('wiggle');
-          b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-          sayPhrase(rand(ENCOURAGE));
+          nope(b);
         }
       });
       cards.appendChild(b);

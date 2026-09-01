@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Khel Khel Mein Seekho 🎈</title>
 <meta name="description" content="A bilingual (Hindi + English) learning game for little kids: ABC, counting, shapes, colors, memory match, animals and sounds.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%8E%88%3C/text%3E%3C/svg%3E">
@@ -36,7 +36,7 @@
 
   <header id="topbar">
     <button id="btn-back" class="icon-btn invisible" aria-label="Back / पीछे">⬅️</button>
-    <button id="star-pill" title="Sticker Book / स्टिकर बुक">⭐ <span id="star-count">0</span></button>
+    <button id="star-pill" aria-label="Sticker Book / स्टिकर बुक">⭐ <span id="star-count">0</span></button>
     <div class="top-right">
       <button id="btn-mute" class="icon-btn" aria-label="Sound / आवाज़">🔊</button>
       <button id="lang-toggle" aria-label="Language / भाषा">
@@ -94,6 +94,7 @@
         <button id="quiz-replay" aria-label="Listen again / फिर से सुनो">🔊</button>
         <div class="bubble-body">
           <div id="quiz-text" aria-live="polite"></div>
+          <p id="quiz-verdict" class="sr-only" aria-live="assertive"></p>
           <div id="quiz-extra"></div>
         </div>
       </div>

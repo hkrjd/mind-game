@@ -37,19 +37,11 @@ const countitGame = (() => {
 
   const state = { round: 0, total: 0, counted: 0, timer: 0 };
 
-  function dots() {
-    const d = $('countit-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 4; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.round ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('countit-dots', 4, state.round); }
 
   function newRound() {
     clearTimeout(state.timer);
-    state.total = 3 + Math.floor(Math.random() * 7); // 3..9
+    state.total = lvl(2, 3, 5) + Math.floor(Math.random() * lvl(4, 7, 8)); // more to count on hard
     state.counted = 0;
     dots();
     const emoji = rand(COUNT_THINGS);
@@ -79,14 +71,14 @@ const countitGame = (() => {
     $('count-scene').dataset.counted = String(state.counted);
     sfx.pop();
     sayPhrase(countWord(state.counted));
-    if (state.counted >= state.total) state.timer = setTimeout(ask, 900);
+    if (state.counted >= state.total) state.timer = later(ask, 900);
   }
 
   function ask() {
     const box = $('count-choices');
     const opts = [state.total];
     while (opts.length < 3) {
-      const n = Math.max(1, Math.min(10, state.total + (Math.floor(Math.random() * 5) - 2)));
+      const n = Math.max(1, Math.min(lvl(10, 10, 15), state.total + (Math.floor(Math.random() * 5) - 2)));
       if (!opts.includes(n)) opts.push(n);
     }
     box.dataset.answer = String(state.total);
@@ -105,10 +97,7 @@ const countitGame = (() => {
 
   function choose(b, n) {
     if (n !== state.total) {
-      sfx.wrong();
-      b.classList.add('dim', 'wiggle');
-      b.addEventListener('animationend', () => b.classList.remove('wiggle'), { once: true });
-      sayPhrase(rand(ENCOURAGE));
+      nope(b, true);
       return;
     }
     sfx.correct();
@@ -119,7 +108,7 @@ const countitGame = (() => {
     sayPhrase(joinPhrase(rand(PRAISE), numPhrase100(state.total)));
     state.round++;
     dots();
-    state.timer = setTimeout(() => {
+    state.timer = later(() => {
       if (state.round >= 4) celebrate({ again: () => { hideCelebrate(); start(); } });
       else newRound();
     }, 1800);
@@ -146,14 +135,14 @@ buildScreen('numline',
   '<button id="numline-start" class="big-btn" data-t="startBtn"></button>');
 
 function numlineQuestion() {
-  const start = 1 + Math.floor(Math.random() * 6); // window 1..4 .. 7..10
+  const start = 1 + Math.floor(Math.random() * lvl(4, 6, 16)); // higher windows on hard
   const cells = [start, start + 1, start + 2, start + 3];
   // Half the rounds hide a number in the middle, half ask what comes next.
   const hideAt = Math.random() < 0.5 ? 3 : 1 + Math.floor(Math.random() * 2);
   const ans = cells[hideAt];
   const opts = [ans];
   while (opts.length < 3) {
-    const n = Math.max(1, Math.min(10, ans + (Math.floor(Math.random() * 5) - 2)));
+    const n = Math.max(1, Math.min(lvl(10, 10, 20), ans + (Math.floor(Math.random() * 5) - 2)));
     if (!opts.includes(n)) opts.push(n);
   }
   const strip = cells.map((n, i) =>
@@ -198,15 +187,7 @@ const shareGame = (() => {
 
   const state = { sets: [], i: 0, left: 0, got: [], timer: 0, locked: false };
 
-  function dots() {
-    const d = $('share-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 4; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.i ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('share-dots', 4, state.i); }
 
   function paintTray(set) {
     const tray = $('share-tray');
@@ -271,7 +252,7 @@ const shareGame = (() => {
         p.addEventListener('animationend', () => p.classList.remove('wiggle'), { once: true });
       });
       sayPhrase(T.shareUneven);
-      state.timer = setTimeout(newRound, 1800);
+      state.timer = later(newRound, 1800);
       return;
     }
     state.locked = true;
@@ -287,7 +268,7 @@ const shareGame = (() => {
     )));
     state.i++;
     dots();
-    state.timer = setTimeout(() => {
+    state.timer = later(() => {
       if (state.i >= 4) celebrate({ again: () => { hideCelebrate(); start(); } });
       else newRound();
     }, 2200);
@@ -335,15 +316,7 @@ const measureGame = (() => {
 
   const state = { items: [], i: 0, blocks: 0, timer: 0, locked: false };
 
-  function dots() {
-    const d = $('meas-dots');
-    d.innerHTML = '';
-    for (let k = 0; k < 4; k++) {
-      const s = document.createElement('span');
-      s.className = 'dot' + (k < state.i ? ' filled' : '');
-      d.appendChild(s);
-    }
-  }
+  function dots() { renderDots('meas-dots', 4, state.i); }
 
   function newRound() {
     clearTimeout(state.timer);
@@ -377,7 +350,7 @@ const measureGame = (() => {
       sfx.wrong();
       b.classList.add('too-many', 'wiggle');
       sayPhrase(phrase('That is too many!', 'ये ज़्यादा हो गया!', 'Ye zyada ho gaya!'));
-      setTimeout(() => b.remove(), 600);
+      later(() => b.remove(), 600);
       return;
     }
     state.blocks++;
@@ -399,7 +372,7 @@ const measureGame = (() => {
     )));
     state.i++;
     dots();
-    state.timer = setTimeout(() => {
+    state.timer = later(() => {
       if (state.i >= 4) celebrate({ again: () => { hideCelebrate(); start(); } });
       else newRound();
     }, 2400);
