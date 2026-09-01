@@ -25,9 +25,25 @@ function ok(cond, msg) {
 
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, name), animations: 'disabled' });
   const back = async () => { await page.click('#btn-back'); };
-  const home = async () => { await page.waitForSelector('#screen-home.active'); };
+  // Home is a shelf of six categories now, so most games are one tap deeper.
+  const home = async () => {
+    for (let i = 0; i < 4; i++) {
+      if (await page.locator('#screen-home.active').count()) break;
+      await page.click('#btn-back');
+      await page.waitForTimeout(80);
+    }
+    await page.waitForSelector('#screen-home.active');
+  };
   const openGame = async (id) => {
-    await page.click('#home-grid .game-card[data-game="' + id + '"]');
+    const direct = '#home-grid .game-card[data-game="' + id + '"]';
+    if (await page.locator(direct).count()) {
+      await page.click(direct);
+    } else {
+      const cat = await page.evaluate((g) => HOME_SECTIONS.findIndex((s) => s.games.includes(g)), id);
+      await page.click('#cat-tiles .cat-tile[data-cat="' + cat + '"]');
+      await page.waitForSelector('#screen-cat.active');
+      await page.click('#cat-grid .game-card[data-game="' + id + '"]');
+    }
     await page.waitForSelector('#screen-' + id + '.active');
   };
   const answerQuiz = async (qnum) => {
@@ -41,8 +57,10 @@ function ok(cond, msg) {
 
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
-  await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 73, 'home shows all 73 game cards');
+  await page.waitForSelector('#home-grid');
+  if (await page.locator('#lang-pick.show').count()) await page.click('#lp-en');
+  await page.waitForSelector('#cat-tiles .cat-tile');
+  ok(await page.locator('#cat-tiles .cat-tile').count() === 6, 'home shows 6 category shelves');
   await shot('20-home-all.png');
 
   console.log('# vocab packs');
@@ -933,6 +951,8 @@ function ok(cond, msg) {
   ok((await page.textContent('#btn-mute')).includes('🔊'), 'mute button switches back to sound on');
 
   console.log('# voice settings');
+  await page.click('#btn-parent');
+  await page.waitForSelector('#screen-parent.active');
   await page.click('#btn-settings');
   await page.waitForSelector('#screen-settings.active');
   ok(await page.locator('#set-en-list .hint').count() === 1, 'no-voice placeholder shows (headless has no voices)');
@@ -946,9 +966,9 @@ function ok(cond, msg) {
 
   console.log('# sticker book');
   const starsNow = parseInt(await page.textContent('#star-count'), 10);
-  const expectUnlocked = Math.min(Math.floor(starsNow / 25), 20);
+  const expectUnlocked = Math.min(Math.floor(starsNow / 25), 40);
   await openGame('stickers');
-  ok(await page.locator('#sticker-shelf .sticker-tile').count() === 20, 'sticker shelf shows 20 stickers');
+  ok(await page.locator('#sticker-shelf .sticker-tile').count() === 40, 'sticker shelf shows 40 stickers');
   ok(await page.getAttribute('#sticker-shelf', 'data-unlocked') === String(expectUnlocked),
     'unlocked count matches stars (' + starsNow + ' stars -> ' + expectUnlocked + ')');
   await back();
@@ -980,6 +1000,53 @@ function ok(cond, msg) {
   await home();
   await page.click('#lang-toggle'); // back to EN
 
+  console.log('# home shelves, streak and parent corner');
+  await home();
+  ok(await page.locator('#today-card').count() === 1, "home offers a game of the day");
+  ok(await page.locator('#recent-row .recent-card').count() > 0, 'just-played row fills as games are played');
+  const homeHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+  ok(homeHeight < 2400, 'home stays about one screen tall (' + homeHeight + 'px)');
+  await page.evaluate(() => {
+    localStorage.setItem('mg-streak', JSON.stringify({ n: 3, last: '2020-01-01' }));
+    renderHome();
+  });
+  ok(await page.getAttribute('#home-streak', 'data-days') === '3', 'streak pill shows the run of days');
+  await shot('87-home-shelves.png');
+
+  const catCount = await page.evaluate(() => HOME_SECTIONS[0].games.filter((g) => GAMES[g]).length);
+  await page.click('#cat-tiles .cat-tile[data-cat="0"]');
+  await page.waitForSelector('#screen-cat.active');
+  ok(await page.locator('#cat-grid .game-card').count() === catCount,
+    'a shelf opens with its own ' + catCount + ' games');
+  await shot('88-category.png');
+  await home();
+
+  await page.evaluate(() => store.addSeconds(180));
+  await page.click('#btn-parent');
+  await page.waitForSelector('#screen-parent.active');
+  ok(await page.locator('#pc-week .pc-day').count() === 7, 'parent corner charts the last 7 days');
+  ok(Number(await page.getAttribute('#pc-week', 'data-today')) >= 3, 'play time is counted (minutes today)');
+  ok(Number(await page.getAttribute('#pc-stats', 'data-played')) > 5, 'it counts how many games were tried');
+  ok(await page.locator('#pc-top .pc-row').count() > 0, 'most-played list is filled in');
+  await page.click('#pc-limit .speed-chip[data-min="30"]');
+  ok(await page.evaluate(() => store.getLimit()) === 30, 'daily play limit saves (30 min)');
+  await page.click('#pc-limit .speed-chip[data-min="0"]');
+  ok(await page.evaluate(() => store.getLimit()) === 0, 'the limit can be switched off again');
+  await shot('89-parent.png');
+  await page.evaluate(() => { store.setLimit(1); store.addSeconds(120); checkScreenTime(); });
+  ok(await page.locator('#break-time.show').count() === 1, 'passing the daily limit shows a gentle break message');
+  await page.click('#break-ok');
+  await home();
+  await page.click('#btn-parent');
+  await page.waitForSelector('#screen-parent.active');
+  await page.click('#pc-limit .speed-chip[data-min="0"]');
+  const starsBefore = await page.evaluate(() => store.getStars());
+  await page.click('#pc-reset');
+  ok(await page.evaluate(() => store.getStars()) === starsBefore, 'one tap does not wipe the stars');
+  await page.click('#pc-reset');
+  ok(await page.evaluate(() => store.getStars()) === 0, 'a confirming second tap resets them');
+  await home();
+
   console.log('# indian voice picking (mocked voices)');
   const p2 = await browser.newPage({ viewport: { width: 900, height: 700 } });
   p2.on('pageerror', (e) => errors.push('p2 pageerror: ' + e.message));
@@ -994,15 +1061,19 @@ function ok(cond, msg) {
     try { window.speechSynthesis.getVoices = () => fake; } catch (e) { /* ignore */ }
   });
   await p2.goto('file://' + path.join(ROOT, 'index.html'));
-  await p2.waitForSelector('#home-grid .game-card');
+  await p2.waitForSelector('#home-grid');
+  if (await p2.locator('#lang-pick.show').count()) await p2.click('#lp-en');
+  await p2.waitForSelector('#cat-tiles .cat-tile');
   const curV = await p2.evaluate(() => speech.current());
   ok(curV.en && curV.en.name === 'Google English India', 'en-IN voice auto-picked over en-US (' + (curV.en && curV.en.name) + ')');
   ok(curV.hi && curV.hi.name === 'Google हिन्दी', 'hi-IN voice auto-picked');
   await p2.evaluate(() => speech.setPreferred('en', 'BasicUS'));
   ok((await p2.evaluate(() => speech.current().en.name)) === 'BasicUS', 'parent voice override applies instantly');
   await p2.reload();
-  await p2.waitForSelector('#home-grid .game-card');
+  await p2.waitForSelector('#cat-tiles .cat-tile');
   ok((await p2.evaluate(() => speech.current().en.name)) === 'BasicUS', 'voice override persists after reload');
+  await p2.click('#btn-parent');
+  await p2.waitForSelector('#screen-parent.active');
   await p2.click('#btn-settings');
   await p2.waitForSelector('#screen-settings.active');
   ok(await p2.locator('#set-en-list .voice-opt').count() === 3, 'settings lists all 3 voices for English');

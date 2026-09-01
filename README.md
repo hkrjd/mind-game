@@ -102,20 +102,42 @@ No installs, no internet needed after loading — just open `index.html` in any 
 | 🎶 **Copy the Tune / धुन कॉपी** | Hear a little tune, then play it back note for note |
 | 🥁 **Keep the Beat / ताल** | Dhol, tabla, manjira — hear the rhythm and echo it |
 | 🎵 **Rhymes / कविताएँ** | Twinkle Twinkle, Baa Baa Black Sheep, मछली जल की रानी, चंदा मामा |
-| 🏆 **Sticker Book / स्टिकर बुक** | Every 25 ⭐ unlocks a new sticker for the shelf — tap the star counter to open it |
+| 🏆 **Sticker Book / स्टिकर बुक** | Every 25 ⭐ unlocks one of 40 stickers for the shelf — tap the star counter to open it |
 
 Everything is spoken aloud, so the child does not need to read. Right answers earn ⭐ stars (saved on the device) with confetti; wrong answers just get a gentle wiggle and "फिर से कोशिश करो!" — no timers, no losing.
 
 ## ▶️ How to play / कैसे खेलें
 
 1. Open `index.html` in a browser (double-click works — no server needed), **or** host it with GitHub Pages (below).
-2. **Tap once anywhere first** — browsers only allow sound after a touch.
-3. Use the **EN | हि** button (top right) to switch language any time, and 🔊/🔇 to mute. ⬅️ (or the phone's back button) goes back; tapping the ⭐ counter opens the Sticker Book.
+2. The very first time, the app asks **English or हिंदी** — one tap, remembered forever.
+3. **Tap once anywhere first** — browsers only allow sound after a touch.
+4. Use the **EN | हि** button (top right) to switch language any time, and 🔊/🔇 to mute. ⬅️ (or the phone's back button) goes back; tapping the ⭐ counter opens the Sticker Book.
+
+### 🏠 Finding a game
+
+Home is one screen, not a wall of 73 cards:
+
+- **🎯 Today's game** — one suggested game a day, picked from the ones the child has played least, so the games at the bottom of the list get a turn too.
+- **⏮️ Just played** — the last six games, one tap away.
+- **🗂️ Six shelves** — ABC & Words, Numbers & Math, Brain Games, Know the World, Science & Nature, Play & Fun. Tap a shelf, tap a game.
+- **🔥 A streak** counts the days played in a row.
+
+### 👪 Parent Corner
+
+The **👪 Parent Corner** button at the bottom of home shows:
+
+- how many minutes were played on each of the last 7 days,
+- total ⭐, stickers unlocked, day streak, and how many of the 73 games have been tried,
+- the games played most — and a rotating list of ones **not tried yet**, to suggest something new,
+- a **daily play limit** (off / 15 / 30 / 45 min). When it is reached the app shows a friendly "time for a break" message — it is a nudge, not a lock,
+- **reset stars** (needs two taps), and the ⚙️ Voice & Sound settings.
+
+Nothing leaves the device: all of it lives in the browser's own storage.
 
 ### 📲 Install it like a real app / फ़ोन पर app जैसा
 
 When the game is hosted on HTTPS (GitHub Pages works), it is a full **PWA**:
-- **Android (Chrome)**: open the game link → menu ⋮ → **Add to Home screen / Install app**
+- **Android (Chrome)**: tap **📲 Install the app** on the home screen, or menu ⋮ → **Add to Home screen**
 - **iPhone (Safari)**: Share button → **Add to Home Screen**
 
 It gets its own icon, opens fullscreen without the browser bar, and **works completely offline** after the first visit.
@@ -140,7 +162,7 @@ A minute later the game is live at `https://<your-username>.github.io/mind-game/
 ## 🛠️ Tech notes
 
 - Zero-build vanilla HTML/CSS/JS — no frameworks, no assets: emoji for pictures, SVG/canvas for shapes and puzzles, Web Speech API for voices, Web Audio API for jingles.
-- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `games-read.js`, `games-math2.js`, `games-nature.js`, `games-world2.js`, `games-fun2.js`, `games-music.js`, `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
+- Files: `index.html`, `style.css`, `app.js` (core engine + first 4 games), `data2.js` (word packs, varnamala, rhymes, 1–100, stickers), `games-vocab.js`, `games-skill.js`, `games-arcade.js`, `games-brain.js`, `games-more.js`, `games-life.js`, `games-read.js`, `games-math2.js`, `games-nature.js`, `games-world2.js`, `games-fun2.js`, `games-music.js`, `parent.js` (parent corner), `settings.js` (voice & speed settings), plus PWA files `manifest.webmanifest`, `sw.js` and `icons/` (regenerate with `node tools/make-icons.js`).
 - Works fully offline: from `file://` directly, and as an installed PWA via the service worker. Degrades gracefully when speech/audio/localStorage are unavailable.
 - **When deploying an update, bump `VERSION` in `sw.js`** so installed apps fetch the new files.
 - Smoke tests (drive every game headlessly and screenshot each screen):

@@ -78,6 +78,11 @@ button {
   justify-content: space-between;
   gap: 10px;
   padding: 12px 14px;
+  /* Stays put: ⭐, 🔇 and the language switch must never scroll away. */
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: linear-gradient(var(--bg1) 72%, rgba(255, 249, 236, 0));
 }
 
 .icon-btn {
@@ -1970,3 +1975,126 @@ button {
 .drum-pad .echo-face { text-shadow: none; }
 .echo-pad.playing { transform: translateY(4px) scale(1.06); filter: brightness(1.25); }
 .echo-area[data-phase="listen"] .echo-pads { opacity: .8; }
+
+/* ================= v8 — home shelves, Parent Corner, overlays ================= */
+
+/* ---- Home: streak, today's game, recently played ---- */
+.streak-pill {
+  align-self: center;
+  background: var(--sunny);
+  border-radius: 999px;
+  padding: 6px 18px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 4px;
+}
+.today-card {
+  width: 100%;
+  min-height: 116px;
+  flex-direction: row;
+  gap: 16px;
+  padding: 16px 22px;
+  justify-content: flex-start;
+}
+.today-card .g-emoji { font-size: 3.2rem; }
+.today-card .g-title { font-size: 1.4rem; text-align: left; }
+.recent-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+}
+.recent-row::-webkit-scrollbar { display: none; }
+.recent-card {
+  flex: 0 0 104px;
+  min-height: 104px;
+  padding: 10px 6px;
+  gap: 4px;
+}
+.recent-card .g-emoji { font-size: 2.4rem; }
+.recent-card .g-title { font-size: .85rem; line-height: 1.15; }
+
+/* ---- Home: the six shelves ---- */
+.cat-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.cat-tile {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  min-height: 104px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: transform .1s;
+}
+.cat-tile:active { transform: translateY(4px) scale(.98); box-shadow: 0 2px 0 rgba(0, 0, 0, .14); }
+.ct-title { font-size: 1.15rem; font-weight: 700; text-align: center; line-height: 1.2; }
+.ct-count { font-size: .9rem; opacity: .6; }
+.cat-title { font-size: 1.4rem; margin: 2px 0 4px; }
+#cat-grid { width: 100%; max-width: 620px; }
+.home-links { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+
+/* ---- First-run language pick & break time ---- */
+.lp-emoji { font-size: 3.6rem; line-height: 1; }
+#lang-pick .overlay-card h2, #break-time .overlay-card h2 { line-height: 1.35; }
+
+/* ---- Parent Corner ---- */
+#screen-parent { align-items: stretch; }
+.pc-week {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 120px;
+}
+.pc-day { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.pc-bar {
+  width: 100%;
+  max-width: 34px;
+  background: var(--sky);
+  border-radius: 8px 8px 4px 4px;
+  transition: height .3s;
+}
+.pc-day.today .pc-bar { background: var(--tangerine); }
+.pc-min { font-size: .8rem; opacity: .7; min-height: 16px; }
+.pc-dayname { font-size: .8rem; opacity: .6; }
+.pc-stats { display: flex; flex-wrap: wrap; gap: 10px; }
+.pc-stat {
+  flex: 1 1 116px;
+  background: #FFF6D8;
+  border-radius: 16px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.pc-stat-big { font-size: 1.25rem; font-weight: 700; }
+.pc-stat-lab { font-size: .82rem; opacity: .7; text-align: center; }
+.pc-list { display: flex; flex-direction: column; gap: 8px; }
+.pc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 8px 12px;
+  box-shadow: var(--shadow-sm);
+}
+.pc-emoji { font-size: 1.6rem; }
+.pc-name { flex: 1; }
+.pc-note { opacity: .6; font-size: .9rem; }
+.pc-actions { display: flex; flex-direction: column; gap: 10px; }
+#pc-reset {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 3px rgba(255, 107, 107, .5), var(--shadow-sm);
+}
+#pc-reset.armed { background: var(--coral); color: #fff; box-shadow: var(--shadow-sm); }

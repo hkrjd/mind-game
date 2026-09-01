@@ -127,6 +127,15 @@ const T = {
   memoryHint: { en: 'Find the pairs!', hi: 'जोड़ी ढूँढो!' },
   celebrate: { en: 'Amazing! You did it!', hi: 'कमाल! तुमने कर दिखाया!', hiSay: 'Kamaal! Tumne kar dikhaya!' },
   langName: { en: 'English!', hi: 'हिंदी!', hiSay: 'Hindi!' },
+  todayGame: { en: "🎯 Today's game", hi: '🎯 आज का खेल' },
+  recentGames: { en: '⏮️ Just played', hi: '⏮️ अभी खेला' },
+  allGames: { en: '🗂️ All the games', hi: '🗂️ सारे खेल' },
+  parentBtn: { en: '👪 Parent Corner', hi: '👪 माता-पिता कोना' },
+  installBtn: { en: '📲 Install the app', hi: '📲 ऐप इंस्टॉल करो' },
+  installIos: 'Safari: Share ➜ Add to Home Screen',
+  langPick: { en: 'Choose a language', hi: 'भाषा चुनो' },
+  breakTitle: { en: 'Time for a break!', hi: 'अब थोड़ा आराम!', hiSay: 'Ab thoda aaram!' },
+  breakBody: { en: 'You have played a lot today. Rest your eyes and play again later!', hi: 'आज बहुत खेल लिया। आँखों को आराम दो, बाद में फिर खेलना!', hiSay: 'Aaj bahut khel liya. Aankhon ko aaram do, baad mein phir khelna!' },
   noHindiVoice: 'Hindi voice not found on this device — using English voice. इस डिवाइस पर हिंदी आवाज़ नहीं मिली।'
 };
 
@@ -163,6 +172,13 @@ let REDUCED = false;
 try { REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* ignore */ }
 
 /* ---------------- Persistence (never crashes) ---------------- */
+
+// 'YYYY-MM-DD' in the device's own timezone — used for streaks and daily time.
+function dayKey(d) {
+  const x = d || new Date();
+  const p2 = (n) => (n < 10 ? '0' : '') + n;
+  return x.getFullYear() + '-' + p2(x.getMonth() + 1) + '-' + p2(x.getDate());
+}
 
 const store = (() => {
   const mem = {};
@@ -201,7 +217,54 @@ const store = (() => {
     },
     setRate(r) { set('mg-rate', String(r)); },
     pref(k) { return get(k, ''); },
-    setPref(k, v) { set(k, v); }
+    setPref(k, v) { set(k, v); },
+
+    // ---- What has been played, when, and for how long (for the parent) ----
+    langChosen() { return get('mg-lang', '') !== ''; },
+    resetStars() { set('mg-stars', '0'); updateStarCount(); },
+    json(k) {
+      try { return JSON.parse(get(k, '{}')) || {}; } catch (e) { return {}; }
+    },
+    plays() { return this.json('mg-plays'); },
+    notePlay(id) {
+      const p = this.plays();
+      const e = p[id] || { n: 0, t: 0 };
+      e.n++;
+      e.t = Date.now();
+      p[id] = e;
+      set('mg-plays', JSON.stringify(p));
+    },
+    recent(k) {
+      const p = this.plays();
+      return Object.keys(p).sort((a, b) => (p[b].t || 0) - (p[a].t || 0)).slice(0, k || 6);
+    },
+    times() { return this.json('mg-time'); },
+    addSeconds(s) {
+      if (!(s > 0)) return;
+      const t = this.times();
+      const d = dayKey();
+      t[d] = (t[d] || 0) + s;
+      const keep = {};
+      Object.keys(t).sort().slice(-7).forEach((k) => { keep[k] = t[k]; }); // a week is plenty
+      set('mg-time', JSON.stringify(keep));
+    },
+    todaySeconds() { return this.times()[dayKey()] || 0; },
+    getLimit() { return parseInt(get('mg-limit', '0'), 10) || 0; },
+    setLimit(m) { set('mg-limit', String(m)); },
+    streak() {
+      const s = this.json('mg-streak');
+      return { n: s.n || 0, last: s.last || '' };
+    },
+    touchStreak() {
+      const s = this.streak();
+      const today = dayKey();
+      if (s.last === today) return s.n;
+      const yesterday = dayKey(new Date(Date.now() - 86400000));
+      s.n = (s.last === yesterday) ? s.n + 1 : 1;
+      s.last = today;
+      set('mg-streak', JSON.stringify(s));
+      return s.n;
+    }
   };
 })();
 
@@ -521,17 +584,29 @@ function activeGameId() {
   return Object.keys(GAMES).find((id) => GAMES[id].screen === currentScreen) || null;
 }
 
+// Only the two browsing screens remember where they were; a game or a quiz
+// always opens at the top, so nothing shifts under the child's finger.
+const scrollMem = {};
+const SCROLL_KEEP = { 'screen-home': 1, 'screen-cat': 1 };
+
 function showScreen(id) {
   if (id !== currentScreen) {
     const prev = activeGameId();
     if (prev && GAMES[prev].onLeave) {
       try { GAMES[prev].onLeave(); } catch (e) { /* ignore */ }
     }
+    if (currentScreen === 'screen-quiz') quiz.stop();
+    if (SCROLL_KEEP[currentScreen]) scrollMem[currentScreen] = window.scrollY;
   }
   speech.stop();
   currentScreen = id;
+  // Home is rebuilt on arrival so "just played" and the streak stay honest.
+  if (id === 'screen-home') renderHome();
   document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
   $('btn-back').classList.toggle('invisible', id === 'screen-home');
+  // Coming back to a shelf should land where the child left it.
+  const y = SCROLL_KEEP[id] ? (scrollMem[id] || 0) : 0;
+  try { requestAnimationFrame(() => window.scrollTo(0, y)); } catch (e) { /* ignore */ }
 }
 
 // Each forward navigation pushes a history entry so the phone's back
@@ -554,6 +629,7 @@ function performBack() {
   const gid = activeGameId();
   // A game can intercept back (e.g. an inner view returns to its own list first).
   if (gid && GAMES[gid].onBack && GAMES[gid].onBack()) return;
+  if (gid && gameBackTo !== 'screen-home') { showScreen(gameBackTo); return; }
   if (currentScreen !== 'screen-home') showScreen('screen-home');
 }
 
@@ -567,6 +643,10 @@ function goBack() {
 }
 
 window.addEventListener('popstate', performBack);
+
+// Non-game screens (Parent Corner) register here so a language switch
+// re-renders their generated content, the way GAMES[id].onLang does.
+const screenRefreshers = {};
 
 // Later game scripts create their own <section class="screen"> with this.
 function buildScreen(id, html) {
@@ -583,6 +663,9 @@ function buildScreen(id, html) {
 let celebrateAgain = null;
 
 function celebrate(opts) {
+  // Some games schedule this on a timer; if the child has already gone home
+  // in the meantime, the party belongs to a screen that is no longer there.
+  if (currentScreen === 'screen-home') return;
   celebrateAgain = opts && opts.again;
   const box = $('celebrate');
   const stars = $('celebrate-stars');
@@ -626,6 +709,15 @@ const quiz = {
   lastKey: null,
   current: null,
   locked: false,
+  timer: 0,
+
+  // Leaving mid-round must not let the pending "next question" (or the
+  // celebration) land on whatever screen the child moved to.
+  stop() {
+    clearTimeout(this.timer);
+    this.timer = 0;
+    this.locked = true;
+  },
 
   start(cfg) {
     this.cfg = cfg;
@@ -692,7 +784,7 @@ const quiz = {
       this.count++;
       this.renderDots();
       sayPhrase(joinPhrase(rand(PRAISE), q.answerPhrase));
-      setTimeout(() => {
+      this.timer = setTimeout(() => {
         if (this.count >= this.cfg.total) {
           celebrate({
             again: () => { hideCelebrate(); quiz.start(quiz.cfg); }
@@ -1090,7 +1182,22 @@ const HOME_SECTIONS = [
   { title: { en: '🎨 Play & Fun', hi: '🎨 खेल और मस्ती' }, games: ['farm', 'skypop', 'drawing', 'rangoli', 'facemaker', 'dress', 'tidy', 'yoga', 'piano', 'tune', 'drum', 'rhymes', 'stickers'] }
 ];
 
-function gameCard(id) {
+// Where ⬅️ should land when leaving a game: the shelf it was opened from.
+let gameBackTo = 'screen-home';
+let catIndex = 0;
+
+function openGameScreen(id, backTo) {
+  const g = GAMES[id];
+  sfx.pop();
+  gameBackTo = backTo || 'screen-home';
+  store.notePlay(id);
+  g.enter();
+  showScreen(g.screen);
+  navPush(g.screen);
+  sayPhrase(GAME_TITLES[id]);
+}
+
+function gameCard(id, backTo) {
   const g = GAMES[id];
   const b = document.createElement('button');
   b.className = 'game-card';
@@ -1098,14 +1205,29 @@ function gameCard(id) {
   b.style.background = g.color;
   b.innerHTML = '<span class="g-emoji">' + g.emoji + '</span>' +
     '<span class="g-title">' + GAME_TITLES[id][store.getLang()] + '</span>';
-  b.addEventListener('click', () => {
-    sfx.pop();
-    g.enter();
-    showScreen(g.screen);
-    navPush(g.screen);
-    sayPhrase(GAME_TITLES[id]);
-  });
+  b.addEventListener('click', () => openGameScreen(id, backTo));
   return b;
+}
+
+function heading(text) {
+  const h = document.createElement('h2');
+  h.className = 'home-cat';
+  h.textContent = text;
+  return h;
+}
+
+// The game of the day: stable for the whole day, but drawn from the games
+// this child has played least — so the ones buried down the list get a turn.
+function todaysGameId() {
+  const ids = HOME_SECTIONS.reduce((a, s) => a.concat(s.games.filter((id) => GAMES[id])), []);
+  if (!ids.length) return null;
+  const plays = store.plays();
+  const fewest = ids.reduce((m, id) => Math.min(m, (plays[id] && plays[id].n) || 0), Infinity);
+  const fresh = ids.filter((id) => ((plays[id] && plays[id].n) || 0) === fewest);
+  const d = dayKey();
+  let seed = 0;
+  for (let i = 0; i < d.length; i++) seed = (seed * 31 + d.charCodeAt(i)) % 100000;
+  return fresh[seed % fresh.length];
 }
 
 function renderHome() {
@@ -1114,18 +1236,77 @@ function renderHome() {
   $('home-sub').textContent = T.subtitle[lang];
   const grid = $('home-grid');
   grid.innerHTML = '';
-  HOME_SECTIONS.forEach((sec) => {
+
+  const st = store.streak();
+  if (st.n >= 2) {
+    const pill = document.createElement('div');
+    pill.id = 'home-streak';
+    pill.className = 'streak-pill';
+    pill.dataset.days = String(st.n);
+    pill.textContent = '🔥 ' + st.n + (lang === 'hi' ? ' दिन' : ' days');
+    grid.appendChild(pill);
+  }
+
+  const today = todaysGameId();
+  if (today) {
+    grid.appendChild(heading(T.todayGame[lang]));
+    const card = gameCard(today, 'screen-home');
+    card.classList.add('today-card');
+    card.id = 'today-card';
+    grid.appendChild(card);
+  }
+
+  const recent = store.recent(6).filter((id) => GAMES[id]);
+  if (recent.length) {
+    grid.appendChild(heading(T.recentGames[lang]));
+    const row = document.createElement('div');
+    row.id = 'recent-row';
+    row.className = 'recent-row';
+    recent.forEach((id) => {
+      const b = gameCard(id, 'screen-home');
+      b.classList.add('recent-card');
+      row.appendChild(b);
+    });
+    grid.appendChild(row);
+  }
+
+  grid.appendChild(heading(T.allGames[lang]));
+  const tiles = document.createElement('div');
+  tiles.id = 'cat-tiles';
+  tiles.className = 'cat-tiles';
+  HOME_SECTIONS.forEach((sec, i) => {
     const ids = sec.games.filter((id) => GAMES[id]);
     if (!ids.length) return;
-    const h = document.createElement('h2');
-    h.className = 'home-cat';
-    h.textContent = sec.title[lang];
-    grid.appendChild(h);
-    const row = document.createElement('div');
-    row.className = 'cat-grid';
-    ids.forEach((id) => row.appendChild(gameCard(id)));
-    grid.appendChild(row);
+    const b = document.createElement('button');
+    b.className = 'cat-tile';
+    b.dataset.cat = String(i);
+    b.dataset.count = String(ids.length);
+    b.innerHTML = '<span class="ct-title">' + sec.title[lang] + '</span>' +
+      '<span class="ct-count">' + ids.length + (lang === 'hi' ? ' खेल' : ' games') + '</span>';
+    b.addEventListener('click', () => openCategory(i));
+    tiles.appendChild(b);
   });
+  grid.appendChild(tiles);
+}
+
+// One reusable shelf screen, filled with whichever category was tapped.
+function openCategory(i) {
+  sfx.pop();
+  catIndex = i;
+  renderCategory();
+  showScreen('screen-cat');
+  navPush('screen-cat');
+}
+
+function renderCategory() {
+  const sec = HOME_SECTIONS[catIndex];
+  if (!sec) return;
+  const lang = store.getLang();
+  $('cat-title').textContent = sec.title[lang];
+  const grid = $('cat-grid');
+  grid.dataset.cat = String(catIndex);
+  grid.innerHTML = '';
+  sec.games.filter((id) => GAMES[id]).forEach((id) => grid.appendChild(gameCard(id, 'screen-cat')));
 }
 
 function applyLang() {
@@ -1140,6 +1321,8 @@ function applyLang() {
     if (s && s[lang]) el.textContent = s[lang];
   });
   renderHome();
+  if (currentScreen === 'screen-cat') renderCategory();
+  if (screenRefreshers[currentScreen]) screenRefreshers[currentScreen]();
   // Refresh whatever screen is open (stateful boards keep their state).
   const gid = activeGameId();
   if (gid && GAMES[gid].onLang) GAMES[gid].onLang();
@@ -1158,6 +1341,70 @@ function toggleLang() {
 
 function updateMuteBtn() {
   $('btn-mute').textContent = store.getMute() ? '🔇' : '🔊';
+}
+
+/* ---- First run: ask which language, instead of silently picking English ---- */
+
+function askLanguage() {
+  const box = $('lang-pick');
+  box.classList.add('show');
+  box.setAttribute('aria-hidden', 'false');
+  const choose = (lang) => {
+    store.setLang(lang);
+    box.classList.remove('show');
+    box.setAttribute('aria-hidden', 'true');
+    sfx.pop();
+    applyLang();
+    sayPhrase(T.langName);
+  };
+  $('lp-en').addEventListener('click', () => choose('en'), { once: true });
+  $('lp-hi').addEventListener('click', () => choose('hi'), { once: true });
+}
+
+/* ---- Screen time: counted while a game is open, shown in Parent Corner ---- */
+
+let breakShownFor = '';
+
+function checkScreenTime() {
+  const limit = store.getLimit();
+  if (!limit) return;
+  const today = dayKey();
+  if (breakShownFor === today) return;
+  if (store.todaySeconds() < limit * 60) return;
+  breakShownFor = today;
+  const box = $('break-time');
+  box.classList.add('show');
+  box.setAttribute('aria-hidden', 'false');
+  sayPhrase(T.breakBody);
+}
+
+function startTimeTicker() {
+  setInterval(() => {
+    if (!activeGameId() && currentScreen !== 'screen-quiz') return;
+    store.addSeconds(30);
+    checkScreenTime();
+  }, 30000);
+}
+
+/* ---- Install: the browser only offers this once the PWA qualifies ---- */
+
+let installPrompt = null;
+
+function setupInstall() {
+  const btn = $('btn-install');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    installPrompt = e;
+    btn.hidden = false;
+  });
+  window.addEventListener('appinstalled', () => { installPrompt = null; btn.hidden = true; });
+  btn.addEventListener('click', () => {
+    sfx.pop();
+    if (!installPrompt) { toast(T.installIos); return; }
+    installPrompt.prompt();
+    installPrompt = null;
+    btn.hidden = true;
+  });
 }
 
 function registerSW() {
@@ -1196,11 +1443,7 @@ function boot() {
   });
   $('star-pill').addEventListener('click', () => {
     if (!GAMES.stickers) return;
-    sfx.pop();
-    GAMES.stickers.enter();
-    showScreen(GAMES.stickers.screen);
-    navPush(GAMES.stickers.screen);
-    sayPhrase(GAME_TITLES.stickers);
+    openGameScreen('stickers', 'screen-home');
   });
   $('quiz-replay').addEventListener('click', () => { sfx.pop(); quiz.replay(); });
   $('btn-again').addEventListener('click', () => {
@@ -1229,11 +1472,25 @@ function boot() {
     quiz.start({ make: (i) => animalsGame.make(i), backTo: 'screen-animals' });
   });
 
+  $('break-ok').addEventListener('click', () => {
+    sfx.pop();
+    const box = $('break-time');
+    box.classList.remove('show');
+    box.setAttribute('aria-hidden', 'true');
+    hideCelebrate();
+    showScreen('screen-home');
+  });
+
   // First touch unlocks/resumes the AudioContext (mobile autoplay policy)
   // and warms up the speech engine so the first word isn't swallowed.
   document.addEventListener('pointerdown', () => { sfx.ensure(); speech.prime(); }, { passive: true });
 
+  const firstRun = !store.langChosen();
+  store.touchStreak();
+  setupInstall();
+  startTimeTicker();
   applyLang();
+  if (firstRun) askLanguage();
 }
 
 document.addEventListener('DOMContentLoaded', boot);

@@ -363,7 +363,27 @@ const STICKERS = [
   { emoji: '🚀', en: 'Rocket', hi: 'रॉकेट', hiSay: 'Rocket' },
   { emoji: '🦖', en: 'Dino', hi: 'डायनासोर', hiSay: 'Dinosaur' },
   { emoji: '🦄', en: 'Unicorn', hi: 'यूनिकॉर्न', hiSay: 'Unicorn' },
-  { emoji: '🏆', en: 'Trophy', hi: 'ट्रॉफी', hiSay: 'Trophy' }
+  { emoji: '🏆', en: 'Trophy', hi: 'ट्रॉफी', hiSay: 'Trophy' },
+  { emoji: '🐘', en: 'Elephant', hi: 'हाथी', hiSay: 'Haathi' },
+  { emoji: '🪔', en: 'Diya', hi: 'दीया', hiSay: 'Diya' },
+  { emoji: '🎡', en: 'Big wheel', hi: 'चरखी झूला', hiSay: 'Charkhi jhoola' },
+  { emoji: '🐅', en: 'Tiger', hi: 'बाघ', hiSay: 'Baagh' },
+  { emoji: '🍦', en: 'Ice cream', hi: 'आइसक्रीम', hiSay: 'Icecream' },
+  { emoji: '🚂', en: 'Train', hi: 'रेलगाड़ी', hiSay: 'Railgaadi' },
+  { emoji: '🌻', en: 'Sunflower', hi: 'सूरजमुखी', hiSay: 'Surajmukhi' },
+  { emoji: '🐢', en: 'Turtle', hi: 'कछुआ', hiSay: 'Kachhua' },
+  { emoji: '🎸', en: 'Guitar', hi: 'गिटार', hiSay: 'Guitar' },
+  { emoji: '🌙', en: 'Moon', hi: 'चाँद', hiSay: 'Chaand' },
+  { emoji: '🐝', en: 'Bee', hi: 'मधुमक्खी', hiSay: 'Madhumakkhi' },
+  { emoji: '🏰', en: 'Castle', hi: 'किला', hiSay: 'Kila' },
+  { emoji: '🪘', en: 'Dhol', hi: 'ढोल', hiSay: 'Dhol' },
+  { emoji: '🐳', en: 'Whale', hi: 'व्हेल', hiSay: 'Whale' },
+  { emoji: '🎨', en: 'Paints', hi: 'रंग', hiSay: 'Rang' },
+  { emoji: '🦩', en: 'Flamingo', hi: 'राजहंस', hiSay: 'Rajhans' },
+  { emoji: '🛝', en: 'Slide', hi: 'फिसलपट्टी', hiSay: 'Fisalpatti' },
+  { emoji: '🌍', en: 'Earth', hi: 'पृथ्वी', hiSay: 'Prithvi' },
+  { emoji: '💎', en: 'Diamond', hi: 'हीरा', hiSay: 'Heera' },
+  { emoji: '🎁', en: 'Present', hi: 'तोहफ़ा', hiSay: 'Tohfa' }
 ];
 
 Object.assign(T, {

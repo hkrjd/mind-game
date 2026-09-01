@@ -74,8 +74,10 @@ function pngSize(buf) {
     page.on('console', (msg) => { if (msg.type() === 'error') errors.push('console: ' + msg.text()); });
 
     await page.goto('http://127.0.0.1:' + PORT + '/');
-    await page.waitForSelector('#home-grid .game-card');
-    ok(await page.locator('#home-grid .game-card').count() === 73, 'app boots over http with 73 cards');
+    await page.waitForSelector('#home-grid');
+    if (await page.locator('#lang-pick.show').count()) await page.click('#lp-en');
+    await page.waitForSelector('#cat-tiles .cat-tile');
+    ok(await page.locator('#cat-tiles .cat-tile').count() === 6, 'app boots over http with all 6 shelves');
     await page.waitForFunction(() => navigator.serviceWorker.getRegistration().then((r) => !!(r && r.active)), null, { timeout: 20000 });
     ok(true, 'service worker registered and active');
     await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 20000 });
@@ -84,9 +86,12 @@ function pngSize(buf) {
     console.log('# offline');
     await context.setOffline(true);
     await page.reload();
-    await page.waitForSelector('#home-grid .game-card', { timeout: 20000 });
-    ok(await page.locator('#home-grid .game-card').count() === 73, 'OFFLINE reload still boots the full app');
-    await page.click('#home-grid .game-card[data-game="abc"]');
+    await page.waitForSelector('#cat-tiles .cat-tile', { timeout: 20000 });
+    ok(await page.locator('#cat-tiles .cat-tile').count() === 6, 'OFFLINE reload still boots the full app');
+    const abcCat = await page.evaluate(() => HOME_SECTIONS.findIndex((s) => s.games.includes('abc')));
+    await page.click('#cat-tiles .cat-tile[data-cat="' + abcCat + '"]');
+    await page.waitForSelector('#screen-cat.active');
+    await page.click('#cat-grid .game-card[data-game="abc"]');
     await page.waitForSelector('#screen-abc.active');
     ok(await page.locator('#abc-grid .tile').count() === 26, 'offline: a game opens and renders');
     await context.setOffline(false);

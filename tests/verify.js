@@ -29,11 +29,45 @@ function ok(cond, msg) {
   // animations:'disabled' fast-forwards the fade-in so shots are never mid-animation
   const shot = (name) => page.screenshot({ path: path.join(SHOTS, name), animations: 'disabled' });
 
+  // A fresh profile is asked which language to use before anything else.
+  const startApp = async () => {
+    await page.waitForSelector('#home-grid');
+    if (await page.locator('#lang-pick.show').count()) await page.click('#lp-en');
+    await page.waitForSelector('#cat-tiles .cat-tile');
+  };
+  // Home is a shelf of categories now: a game is one tap deeper unless it
+  // happens to be today's pick or in the just-played row.
+  const openGame = async (id) => {
+    const direct = '#home-grid .game-card[data-game="' + id + '"]';
+    if (await page.locator(direct).count()) {
+      await page.click(direct);
+    } else {
+      const cat = await page.evaluate((g) => HOME_SECTIONS.findIndex((s) => s.games.includes(g)), id);
+      await page.click('#cat-tiles .cat-tile[data-cat="' + cat + '"]');
+      await page.waitForSelector('#screen-cat.active');
+      await page.click('#cat-grid .game-card[data-game="' + id + '"]');
+    }
+    await page.waitForSelector('#screen-' + id + '.active');
+  };
+  const home = async () => {
+    for (let i = 0; i < 4; i++) {
+      if (await page.locator('#screen-home.active').count()) break;
+      await page.click('#btn-back');
+      await page.waitForTimeout(80);
+    }
+    await page.waitForSelector('#screen-home.active');
+  };
+
   console.log('# load');
   await page.goto('file://' + path.join(ROOT, 'index.html'));
-  await page.waitForSelector('#home-grid .game-card');
-  ok(await page.locator('#home-grid .game-card').count() === 73, 'home shows 73 game cards');
-  ok(await page.locator('#home-grid .home-cat').count() === 6, 'home shows 6 category headings');
+  ok(await page.locator('#lang-pick.show').count() === 1, 'a fresh install asks which language to use');
+  await startApp();
+  ok(await page.locator('#cat-tiles .cat-tile').count() === 6, 'home shows 6 category shelves');
+  const totalGames = await page.evaluate(() =>
+    HOME_SECTIONS.reduce((a, s) => a + s.games.filter((g) => GAMES[g]).length, 0));
+  ok(totalGames === 73, 'the shelves hold all 73 games');
+  const homeH = await page.evaluate(() => document.documentElement.scrollHeight);
+  ok(homeH < 2000, 'home fits in about one screen (' + homeH + 'px, was ~6600px)');
   await shot('01-home.png');
 
   // Answers the currently shown quiz question via the data-answer hook.
@@ -57,8 +91,7 @@ function ok(cond, msg) {
   }
 
   console.log('# abc & ginti');
-  await page.click('#home-grid .game-card[data-game="abc"]');
-  await page.waitForSelector('#screen-abc.active');
+  await openGame('abc');
   ok(await page.locator('#abc-grid .tile').count() === 26, 'ABC tab shows 26 letters');
   await page.click('#abc-grid .tile:nth-child(1)'); // tap "A" — must not crash without voices
   await page.click('#screen-abc .tab[data-tab="numbers"]');
@@ -81,8 +114,7 @@ function ok(cond, msg) {
   await page.waitForSelector('#screen-home.active');
 
   console.log('# shapes & colors');
-  await page.click('#home-grid .game-card[data-game="shapes"]');
-  await page.waitForSelector('#screen-shapes.active');
+  await openGame('shapes');
   ok(await page.locator('#shapes-grid .tile').count() === 8, '8 shape tiles');
   ok(await page.locator('#colors-row .blob-tile').count() === 8, '8 color blobs');
   await page.click('#shapes-grid .tile:nth-child(1)');
@@ -93,12 +125,10 @@ function ok(cond, msg) {
   ok(true, 'shapes quiz advances to question 2');
   await page.click('#btn-back'); // quiz -> shapes learn screen
   await page.waitForSelector('#screen-shapes.active');
-  await page.click('#btn-back');
-  await page.waitForSelector('#screen-home.active');
+  await home();
 
   console.log('# memory match');
-  await page.click('#home-grid .game-card[data-game="memory"]');
-  await page.waitForSelector('#screen-memory.active');
+  await openGame('memory');
   ok(await page.locator('#memory-grid .mem-card').count() === 12, '12 memory cards dealt');
   const emojis = await page.$$eval('#memory-grid .mem-card', (els) => els.map((e) => e.dataset.emoji));
   let i1 = -1, i2 = -1;
@@ -128,12 +158,10 @@ function ok(cond, msg) {
     return !cards[a].classList.contains('flipped') && !cards[b].classList.contains('flipped');
   }, [m1, m2]);
   ok(true, 'mismatched pair flips back');
-  await page.click('#btn-back');
-  await page.waitForSelector('#screen-home.active');
+  await home();
 
   console.log('# animals & sounds');
-  await page.click('#home-grid .game-card[data-game="animals"]');
-  await page.waitForSelector('#screen-animals.active');
+  await openGame('animals');
   ok(await page.locator('#animals-grid .tile').count() === 12, '12 animal tiles');
   await page.click('#animals-grid .tile:nth-child(2)');
   await shot('07-animals.png');
@@ -142,8 +170,7 @@ function ok(cond, msg) {
   await page.waitForFunction(() => document.getElementById('quiz-choices').dataset.qnum === '2');
   ok(true, 'animals quiz advances to question 2');
   await page.click('#btn-back');
-  await page.click('#btn-back');
-  await page.waitForSelector('#screen-home.active');
+  await home();
 
   console.log('# hindi mode');
   await page.click('#lang-toggle');
@@ -151,15 +178,14 @@ function ok(cond, msg) {
   ok(/[ऀ-ॿ]/.test(hiTitle), 'home title switches to Devanagari: ' + hiTitle);
   ok((await page.getAttribute('html', 'lang')) === 'hi', '<html lang> becomes hi');
   await shot('08-hindi-home.png');
-  await page.click('#home-grid .game-card[data-game="abc"]');
+  await openGame('abc');
   await page.click('#abc-grid .tile:nth-child(5)'); // speak path in hindi mode — no crash
-  await page.click('#btn-back');
-  await page.waitForSelector('#screen-home.active');
+  await home();
 
   console.log('# persistence across reload');
   const starsPre = await page.textContent('#star-count');
   await page.reload();
-  await page.waitForSelector('#home-grid .game-card');
+  await startApp();
   const starsPost = await page.textContent('#star-count');
   ok(starsPre === starsPost && parseInt(starsPost, 10) > 0, `stars persist after reload (${starsPost})`);
   ok(/[ऀ-ॿ]/.test(await page.textContent('#home-title')), 'language choice persists after reload');
@@ -167,9 +193,9 @@ function ok(cond, msg) {
   console.log('# responsive');
   await page.setViewportSize({ width: 390, height: 844 });
   await shot('09-mobile-portrait.png');
-  await page.click('#home-grid .game-card[data-game="memory"]');
+  await openGame('memory');
   await shot('10-mobile-memory.png');
-  await page.click('#btn-back');
+  await home();
   await page.setViewportSize({ width: 844, height: 390 });
   await shot('11-mobile-landscape.png');
 

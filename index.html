@@ -28,6 +28,7 @@
 <script defer src="games-world2.js"></script>
 <script defer src="games-fun2.js"></script>
 <script defer src="games-music.js"></script>
+<script defer src="parent.js"></script>
 <script defer src="settings.js"></script>
 </head>
 <body>
@@ -50,7 +51,15 @@
       <h1 id="home-title">Khel Khel Mein Seekho!</h1>
       <p id="home-sub" class="hint"></p>
       <div id="home-grid"></div>
-      <button id="btn-settings" class="settings-link" data-t="settingsBtn"></button>
+      <div class="home-links">
+        <button id="btn-install" class="settings-link" data-t="installBtn" hidden></button>
+        <button id="btn-parent" class="settings-link" data-t="parentBtn"></button>
+      </div>
+    </section>
+
+    <section id="screen-cat" class="screen">
+      <h2 id="cat-title" class="cat-title"></h2>
+      <div id="cat-grid" class="cat-grid" data-cat=""></div>
     </section>
 
     <section id="screen-abc" class="screen">
@@ -100,6 +109,28 @@
       <div class="overlay-btns">
         <button id="btn-again" class="big-btn" data-t="again"></button>
         <button id="btn-cele-home" class="big-btn alt" data-t="homeBtn"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lang-pick" class="overlay" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="lp-emoji" aria-hidden="true">🎈</div>
+      <h2>Choose a language<br><span lang="hi">भाषा चुनो</span></h2>
+      <div class="overlay-btns">
+        <button id="lp-en" class="big-btn">English</button>
+        <button id="lp-hi" class="big-btn alt" lang="hi">हिंदी</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="break-time" class="overlay" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="lp-emoji" aria-hidden="true">🌙</div>
+      <h2 id="break-title" data-t="breakTitle"></h2>
+      <p id="break-body" class="hint" data-t="breakBody"></p>
+      <div class="overlay-btns">
+        <button id="break-ok" class="big-btn" data-t="homeBtn"></button>
       </div>
     </div>
   </div>

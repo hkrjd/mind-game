@@ -1,7 +1,7 @@
 'use strict';
 /* Service worker for Khel Khel Mein Seekho.
    Bump VERSION on every deploy so clients pick up the new files. */
-const VERSION = 'kkms-v10';
+const VERSION = 'kkms-v11';
 
 const SHELL = [
   './',
@@ -21,6 +21,7 @@ const SHELL = [
   'games-world2.js',
   'games-fun2.js',
   'games-music.js',
+  'parent.js',
   'settings.js',
   'manifest.webmanifest',
   'icons/icon-192.png',
