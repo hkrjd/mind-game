@@ -687,8 +687,9 @@ const trafficGame = (() => {
       sayPhrase(T.greenGo);
       store.addStars(1);
       starFly(car);
+      const dist = Math.max(60, road.clientWidth - car.offsetWidth - 20);
       car.style.transition = 'transform 1.4s ease-in-out';
-      car.style.transform = 'translateX(' + (road.clientWidth - 10) + 'px)';
+      car.style.transform = 'translateX(-' + dist + 'px)';
       state.cross++;
       $('traffic-scene').dataset.cross = String(state.cross);
       later(() => {

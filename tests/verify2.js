@@ -373,6 +373,10 @@ function ok(cond, msg) {
   await page.click('#traffic-go');
   await page.waitForFunction(() => document.getElementById('traffic-scene').dataset.cross === '1');
   ok(true, 'GO on green crosses the road');
+  // The car emoji faces left, so a positive shift would look like reversing.
+  // Read the target the transition is heading for, not the value mid-flight.
+  const carShift = await page.evaluate(() => document.getElementById('traffic-car').style.transform);
+  ok(/translateX\(-\d/.test(carShift), 'the car drives the way it faces, not backwards (' + carShift + ')');
   await shot('36-traffic.png');
   await back();
   await home();
